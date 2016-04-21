@@ -1,16 +1,25 @@
 # encoding=utf-8
 
+import sys
 import codecs
 import math
 import word_segment
 import json
-import sys
+from analyze_settings import *
+
 
 class TFIDFTransformer(object):
     def __init__(self):
         self.word_idf = {}
         self.doc_count = 0
         self.has_idf = False
+
+    def isNumber(self, word):
+        try:
+            float(word)
+        except ValueError:
+            return False
+        return True
 
     def addDocument(self, raw_doc, use_stop_words=False):
         doc_word_list = word_segment.word_segment(raw_doc, use_stop_words)
@@ -20,6 +29,8 @@ class TFIDFTransformer(object):
     def addDocumentWordList(self, doc_word_list):
         self.doc_count += 1
         for w in set(doc_word_list):
+            if self.isNumber(w):
+                continue
             if w in self.word_idf:
                 self.word_idf[w] += 1
             else:
@@ -40,7 +51,8 @@ class TFIDFTransformer(object):
             return
         output = codecs.open(filename, 'wb', 'utf-8')
         for w in self.word_idf:
-            output.write(w + '\t' + str(w) + '\n')
+            output.write(w + ' ')
+            output.write(str(self.word_idf[w]) + '\n')
         pass
 
     def clear(self):
@@ -49,14 +61,14 @@ class TFIDFTransformer(object):
         pass
 
 
-def main():
-    doc_file = r'C:\Users\s_pankh\news_data\crawl_news\EastMoneyNewsSpider-bak.json'
-    idf_file = r'C:\Users\s_pankh\news_data\analyze\data\idf.txt'
+def processIDF():
+    doc_file = CRAWL_FILE_NAMES['eastmoney']
+    idf_file = IDF_FILE
     file = codecs.open(doc_file, 'r', 'utf-8')
     tfidf = TFIDFTransformer()
     i = 0
     for line in file:
-        i = i+1
+        i = i + 1
         print i
         try:
             data = json.loads(line.strip())
@@ -78,4 +90,7 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    if __name__ == '__main__':
+        os.chdir(BASE_DIR)
+        sys.path.append(os.path.abspath(BASE_DIR))
+    processIDF()

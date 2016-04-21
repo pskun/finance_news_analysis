@@ -37,17 +37,18 @@ class NewsPipeline(BasicPipeline):
     def __init__(self, news_website):
         self.__count_news = {}
         self.__error_lines = []
-        self.__keywordExtrctor = None
+        self.__keywordExtractor = None
         self.__news_website = news_website
         pass
 
     def before_process(self):
         self.__error_lines = []
-        self.__keywordExtrctor = KeywordExtractor()
+        self.__keywordExtractor = KeywordExtractor()
         for keyword_type in GIVEN_KEYWORD_FILES:
             kfile = os.path.join(
                 GIVEN_KEYWORD_DIR, GIVEN_KEYWORD_FILES[keyword_type])
-            self.__keywordExtrctor.initGivenKeywords(keyword_type, kfile)
+            self.__keywordExtractor.initGivenKeywords(keyword_type, kfile)
+        self.__keywordExtractor.initTfidfKeywords(IDF_FILE)
         pass
 
     def after_process(self):
@@ -71,14 +72,29 @@ class NewsPipeline(BasicPipeline):
         # process news content
         content = item.get('content')
         if content is not None:
+            # 抽取给定关键字
+            '''
             all_type_keywords = self.extractKeywords(content)
             item['all_type_keywords'] = all_type_keywords
+            '''
+            # 抽取TFIDF关键字
+            keywords = self.__keywordExtractor.extractTfidfKeywords(content)
+            for k in keywords:
+                sys.stderr.write(k[0]+',')
+            sys.stderr.write("\n")
+        # process stock ticker
+        mention_tickers_id = item.get('mention_tickers_id')
+        if mention_tickers_id is not None:
+            item['mention_tickers_id'] = [t[:6] for t in mention_tickers_id]
+        # just for debug
+        '''
         try:
             line = json.dumps(
                 item, ensure_ascii=False, default=json_util.default)
         except:
             print line
             sys.exit(1)
+        '''
         return item
         pass
 
@@ -91,7 +107,7 @@ class NewsPipeline(BasicPipeline):
             self.__count_news[date_str] = 1
 
     def extractKeywords(self, content):
-        all_type_keywords = self.__keywordExtrctor.extractGivenKeywords(
+        all_type_keywords = self.__keywordExtractor.extractGivenKeywords(
             content)
         return all_type_keywords
         pass
@@ -142,10 +158,10 @@ class DatabasePipeline(BasicPipeline):
             None,
             "page_id",
             "page_name",
-            "page_lever")
+            "page_level")
         self.__page_id = {}
         for item in result:
-            if item['page_lever'] == 2:
+            if item['page_level'] == 2:
                 if item['page_name'] not in self.__page_id:
                     self.__page_id[item['page_name']] = item['page_id']
         # 关键字属性id
@@ -177,6 +193,7 @@ class DatabasePipeline(BasicPipeline):
         pass
 
     def process_item(self, data):
+        # 插入新闻
         news_id = self.__db_connection.insertOne(
             mysql_config.DATABASE_TABLES['TABLE_NEWS_LIST'],
             news_title=data['title'],
@@ -186,6 +203,7 @@ class DatabasePipeline(BasicPipeline):
             web_id=self.__web_id,
             news_file_id=self.__news_file_id
         )
+        # 插入关键字
         news_keywords = data.get('all_type_keywords')
         if news_keywords is not None:
             news_keywords_tuple_list = []
@@ -205,4 +223,30 @@ class DatabasePipeline(BasicPipeline):
                     "keywords_id",
                     "news_id")
                 pass
+        # 插入股票新闻关联表
+        mention_tickers_id = data.get('mention_tickers_id')
+        if mention_tickers_id is not None:
+            news_tickers_tuple_list = []
+            for ticker in mention_tickers_id:
+                news_tickers_tuple_list.append((news_id, ticker))
+            if len(news_keywords_tuple_list) > 0:
+                self.__db_connection.insertMany(
+                    mysql_config.DATABASE_TABLES['TABLE_COR_SEC_OF_NEWS'],
+                    news_tickers_tuple_list,
+                    "news_id",
+                    "sec_number")
+        pass
+
+
+class GubaPipeline(object):
+    def __init__(self):
+        pass
+
+    def before_process(self):
+        pass
+
+    def after_process(self):
+        pass
+
+    def process_item(self, item):
         pass

@@ -18,7 +18,7 @@ except:
     pass
 
 
-class NewsPreprocessHandler():
+class NewsPreprocessHandler(threadpool.Handler):
 
     def __init__(self, news_website):
         self.__news_website = news_website
@@ -34,8 +34,10 @@ class NewsPreprocessHandler():
         try:
             if data_item is not None:
                 data_item = self.__newsPipe.process_item(data_item)
+            '''
             if data_item is not None:
                 data_item = self.__dbPipe.process_item(data_item)
+            '''
         except KeyboardInterrupt:
             try:
                 sys.exit(0)
@@ -49,6 +51,7 @@ class GivenKeywordsHandler():
         pass
 
 
+# 对新闻数据进行预处理，主要是清洗然后插入数据库
 def preprocess_news(news_website):
     pool = threadpool.ThreadPool(PIPELINE_THREAD_SIZE)
     # add customer threadpool worker
@@ -71,13 +74,47 @@ def preprocess_news(news_website):
                 pool.add_process_data(data_item)
         except:
             # traceback.print_exc()
+            wrong_output.write(line + '\n')
+            continue
+    pool.wait_completion()
+    pass
+
+
+# 对股吧数据进行预处理，主要是清洗和插入数据库
+def preprocess_guba(guba_website):
+    pool = threadpool.ThreadPool(PIPELINE_THREAD_SIZE)
+    '''
+    # add customer threadpool worker
+    for i in range(PIPELINE_THREAD_SIZE):
+        h = NewsPreprocessHandler(guba_website)
+        h.init_handler()
+        pool.add_handler(h)
+    pool.startAll()
+    # open wrong output log
+    wrong_output = codecs.open(
+        WRONG_PREPROCESS_OUTPUT, 'w', 'utf-8', errors='ignore')
+    '''
+    # open todo file
+    for line in codecs.open(
+            CRAWL_FILE_NAMES[guba_website], 'r', 'utf-8',
+            errors='ignore'):
+        try:
+            line = line.strip().replace(u'\xa0', u' ')
+            print line
+            '''
+            data_item = json.loads(line)
+            if data_item is not None:
+                pool.add_process_data(data_item)
+            '''
+        except:
+            # traceback.print_exc()
             wrong_output.write(line)
             continue
+    pool.wait_completion()
     pass
 
 
 def preprocess_given_keywords():
-    print "aaaaaa"
     kwfiles_id = {}
     conn = mysql_pool.MySQLPool.getSingleConnection()
     # 插入关键字类型
@@ -134,15 +171,15 @@ def preprocess_primary_info(news_website):
             continue
     for section in sections:
         section_id = conn.insertOne(
-            mysql_config.DATABASE_TABLES['TABLE_PAGE_LIST'],
-            web_id=web_id,
-            page_name=section,
-            page_lever="1")
+                mysql_config.DATABASE_TABLES['TABLE_PAGE_LIST'],
+                web_id=web_id,
+                page_name=section,
+                page_level="1")
         for sub_section in sections[section]:
             conn.insertOne(mysql_config.DATABASE_TABLES['TABLE_PAGE_LIST'],
                            web_id=web_id,
                            page_name=sub_section,
-                           page_lever="2",
+                           page_level="2",
                            parent_page_id=section_id)
             pass
         pass

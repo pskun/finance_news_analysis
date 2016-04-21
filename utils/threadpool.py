@@ -6,21 +6,44 @@ from Queue import Queue
 from threading import Thread
 
 
+class Handler(object):
+
+    def __init__(self):
+        pass
+
+    def init_handler(self):
+        pass
+
+    def process_function(self, data_item):
+        pass
+
+    def handle_done(self):
+        pass
+
+
 class Worker(Thread):
     """ Thread excuting tasks from a given taks queue"""
 
-    def __init__(self, handler):
+    def __init__(self, handler, queue=None):
         Thread.__init__(self)
-        self.__queue = None
+        self.__queue = queue
         self.__handler = None
         self.__daemon = True
         self.__handler = handler
 
     def setTaskQueue(self, queue):
         self.__queue = queue
+        pass
 
     def startWorker(self):
+        self.setDaemon(self.__daemon)
         self.start()
+        pass
+
+    def worker_done(self):
+        """线程即将退出前调用"""
+        self.__handler.handle_done()
+        pass
 
     def run(self):
         while True:
@@ -32,6 +55,8 @@ class Worker(Thread):
                 sys.exit()
             self.__queue.task_done()
             pass
+        self.worker_done()
+        pass
 
 
 class ThreadPool(object):
@@ -41,6 +66,7 @@ class ThreadPool(object):
         self.__workers = []
         self.__num_threads = num_threads
         self.__queue = Queue()
+        self.__output = Queue()
         pass
 
     def add_process_data(self, data):
@@ -61,6 +87,11 @@ class ThreadPool(object):
         # w.setDaemon(True)
         self.__workers.append(w)
         return True
+
+    def produce_completed(self):
+        """ 生成者消费者模式中，生产者把数据全局put进队列后调用"""
+        # TODO
+        pass
 
     def startAll(self):
         for t in self.__workers:
