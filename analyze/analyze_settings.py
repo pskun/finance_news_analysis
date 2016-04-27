@@ -19,7 +19,7 @@ GIVEN_KEYWORD_DIR = os.path.join(ANALYZE_DATA_DIR, 'given_keywords')
 
 # 数据预处理文件的路径
 CRAWL_FILE_NAMES = {
-    u"eastmoney": r'EastMoneyNewsSpider-bak.json',
+    u"eastmoney": r'EastMoneyNewsSpider.json',
     u"guba": r'EastMoneyGubaSpider.json',
 }
 for key in CRAWL_FILE_NAMES:
@@ -27,6 +27,7 @@ for key in CRAWL_FILE_NAMES:
 
 CRAWL_WEBSITES = {
     u"eastmoney": r'http://www.eastmoney.com/',
+    u"guba": r"http://guba.eastmoney.com/",
 }
 
 # 预处理错误输出文件
@@ -49,4 +50,4 @@ for key in GIVEN_KEYWORD_FILES:
 
 MAX_INSERT_NUM = 500
 
-PIPELINE_THREAD_SIZE = 1
+PIPELINE_THREAD_SIZE = 25

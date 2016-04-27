@@ -56,7 +56,7 @@ class MySQLConnection(object):
         elif args:
             values = args
             query += " VALUES(" + ",".join(["%s"] * len(values)) + ")"
-        print query
+        # print query
         self.__session.execute(query, values)
         return self.__session.lastrowid
     # End def insert

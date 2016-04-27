@@ -35,7 +35,7 @@ class SqlAlchemyPool(object):
     # 单例模式
     def __new__(cls, *args, **kwargs):
         if not cls.__instance:
-            cls.__instance = super(MySQLPool, cls).__new__(
+            cls.__instance = super(SqlAlchemyPool, cls).__new__(
                 cls, *args, **kwargs)
         return cls.__instance
     # End def __new__
@@ -87,7 +87,7 @@ class MySQLPool(object):
     # 单例模式
     def __new__(cls, *args, **kwargs):
         if not cls.__instance:
-            cls.__instance = super(SqlAlchemyPool, cls).__new__(
+            cls.__instance = super(MySQLPool, cls).__new__(
                 cls, *args, **kwargs)
         return cls.__instance
     # End def __new__

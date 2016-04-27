@@ -42,5 +42,12 @@ class EastMoneyGubaItem(scrapy.Item):
     poster_id = scrapy.Field()
     poster_name = scrapy.Field()
     status = scrapy.Field()
+    tiezi_id = scrapy.Field()
     #item_name = scrapy.Field()
-    
+
+
+class EastMoneyGubaListItem(scrapy.Item):
+    url = scrapy.Field()
+    title = scrapy.Field()
+    a_post_time = scrapy.Field()
+    pass   

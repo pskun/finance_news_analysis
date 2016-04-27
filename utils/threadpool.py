@@ -17,7 +17,7 @@ class Handler(object):
     def process_function(self, data_item):
         pass
 
-    def handle_done(self):
+    def clear_handler(self):
         pass
 
 
@@ -42,7 +42,7 @@ class Worker(Thread):
 
     def worker_done(self):
         """线程即将退出前调用"""
-        self.__handler.handle_done()
+        self.__handler.clear_handler()
         pass
 
     def run(self):

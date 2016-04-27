@@ -6,7 +6,7 @@ from scrapy.spiders import CrawlSpider, Rule
 from crawl_news.items import EastMoneyNewsItem
 from crawl_news.items import EastMoneyGubaItem
 
-class EastmoneynewsspiderSpider(CrawlSpider):
+class EastmoneyNewsSpider(CrawlSpider):
     name = 'EastMoneyNewsSpider'
     allowed_domains = ['eastmoney.com']
     

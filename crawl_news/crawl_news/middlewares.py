@@ -17,7 +17,7 @@ class RandomUserAgentMiddleWare(UserAgentMiddleware):
         request.headers.setdefault('Accept', r'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8')
         request.headers.setdefault('Accept-Language', 'zh-CN,zh;q=0.8')
         request.headers.setdefault('Accept-Encoding', 'gzip, deflate, sdch')
-        request.headers.setdefault('Referer', 'http://www.eastmoney.com/')
+        #request.headers.setdefault('Referer', 'http://www.eastmoney.com/')
         pass
 
 

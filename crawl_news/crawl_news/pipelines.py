@@ -5,13 +5,15 @@
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
 
+import os
 import json
 import codecs
 import time, datetime
 import traceback
 
+from pybloom import BloomFilter
+
 from scrapy import signals
-from scrapy.exporters import JsonLinesItemExporter
 from crawl_news.items import EastMoneyNewsItem
 from crawl_news.items import EastMoneyGubaItem
 from scrapy.exceptions import DropItem
@@ -23,6 +25,7 @@ class CrawlNewsPipeline(object):
         self.files = {}
         self.error_count = 0
         self.success_count = 0
+        self.bloom_filter = None
         
     @classmethod
     def from_crawler(cls, crawler):
@@ -32,17 +35,21 @@ class CrawlNewsPipeline(object):
         return pipeline    
     
     def spider_opened(self, spider):
-        
+        '''
+        self.bloom_file = '%s.bloom' % spider.name
+        if os.path.exists(self.bloom_file):
+            self.bloom_filter = BloomFilter.fromfile(open(self.bloom_file, 'r'))
+        else:
+            self.bloom_filter = BloomFilter(capacity=100000000, error_rate=0.001)
+        '''
         news_file = codecs.open('%s.json' % "EastMoneyNewsSpider", 'a+b', 'utf-8', 'ignore')
         guba_file = codecs.open('%s.json' % "EastMoneyGubaSpider", 'a+b', 'utf-8', 'ignore')
-        error_url_file = codecs.open('%s_error_url.txt' % spider.name, 'wb', 'utf-8', 'ignore')
         '''
         news_file = open('%s.json' % "EastMoneyNewsSpider", 'a+b')
         guba_file = open('%s.json' % "EastMoneyGubaSpider", 'a+b')
         '''
         self.files["EastMoneyNewsSpider"] = news_file
         self.files["EastMoneyGubaSpider"] = guba_file
-        self.files["EastMoneyErrorUrls"] = error_url_file
         '''
         self.exporter = JsonLinesItemExporter(file)
         self.exporter.start_exporting()
@@ -55,14 +62,19 @@ class CrawlNewsPipeline(object):
         news_file.close()
         guba_file = self.files.pop("EastMoneyGubaSpider")
         guba_file.close()
-        error_url_file = self.files.pop("EastMoneyErrorUrls")
-        error_url_file.close()
+        #self.bloom_filter.tofile(open(self.bloom_file, 'w'))
+        pass
+
         
     def process_item(self, item, spider):
+        item_id = item['ticker_id'] + item['tiezi_id']
+        '''
+        if item_id in self.bloom_filter:
+            return None
+        self.bloom_filter.add(item_id)
+        '''
         status = item.get('status')
         if status is not None and status != 200:
-            line = item['url'] + '\t' + str(status) + '\n'
-            self.files["EastMoneyErrorUrls"].write(line)
             self.error_count += 1
             if self.error_count * 5 > self.success_count:
                 raise CloseSpider('too many error occurred, shutdown gracefully.')
@@ -79,6 +91,7 @@ class CrawlNewsPipeline(object):
         try:
             # dumps 并输出
             line = json.dumps(dict(item), ensure_ascii=False, sort_keys=True) + '\n'
+            #line = line.replace(u'\xa0', u' ')
             #line = line.encode('utf-8')
             #print line
             if isinstance(item, EastMoneyNewsItem):
