@@ -7,12 +7,6 @@
 
 import scrapy
 
-
-class CrawlNewsItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
-
 class EastMoneyNewsItem(scrapy.Item):
     url = scrapy.Field()
     title = scrapy.Field()
@@ -47,7 +41,17 @@ class EastMoneyGubaItem(scrapy.Item):
 
 
 class EastMoneyGubaListItem(scrapy.Item):
+    list_url = scrapy.Field()
+    status = scrapy.Field()
+    ticker_id = scrapy.Field()
+    ticker_name = scrapy.Field()
+    tiezi_item = scrapy.Field()
+    pass
+
+class EastMoneyGubaPageNumItem(scrapy.Item):
     url = scrapy.Field()
-    title = scrapy.Field()
-    a_post_time = scrapy.Field()
-    pass   
+    status = scrapy.Field()
+    ticker_id = scrapy.Field()
+    total_count = scrapy.Field()
+    num_per_page = scrapy.Field()
+    pass
