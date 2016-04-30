@@ -2,12 +2,13 @@
 
 import os
 import sys
-
+import traceback
 import time
 from datetime import datetime
 import locale
 import json
 from bson import json_util
+
 from analyze_settings import *
 sys.path.append(os.path.abspath(BASE_DIR))
 
@@ -277,6 +278,29 @@ class GubaPipeline(object):
         poster = item.get('poster_name')
         if poster is not None:
             item['poster'] = poster
+        return item
+        pass
+
+
+class GubaListPipeline(object):
+    def __init__(self, guba_website):
+        self.__error_lines = []
+        self.__keywordExtractor = None
+        self.__news_website = guba_website
+        pass
+
+    def before_process(self):
+        pass
+
+    def after_process(self):
+        pass
+
+    def process_item(self, item):
+        # process stock ticker
+        # 获取股票的代码
+        ticker_id = item.get('ticker_id')
+        if ticker_id is None:
+            return None
         # just for debug
         '''
         try:
@@ -287,4 +311,50 @@ class GubaPipeline(object):
             sys.exit(1)
         '''
         return item
+        pass
+
+
+class GubaDBInsertionPipeline(BasicPipeline):
+    def __init__(self, news_website):
+        self.__db_handler = None
+        self.__db_connection = None
+        self.__news_website = news_website
+        self.__tiezi_tuple_list = []
+        pass
+
+    def before_process(self):
+        self.__db_connection = mysql_pool.MySQLPool.getSingleConnection()
+        # self.__db_connection.execute("set autocommit=0;")
+        pass
+
+    def after_process(self):
+        if len(self.__tiezi_tuple_list) > 0:
+            self.__db_connection.insertMany(
+                mysql_config.DATABASE_TABLES['GUBA_LIST'],
+                self.__tiezi_tuple_list,
+                "title", "publish_time", "click_amount", "comment_amount", "sec_number", "url")
+        pass
+
+    def process_item(self, data):
+        if data is None:
+            return None
+        try:
+            ticker_id = data['ticker_id']
+            for item in data['tiezi_item']:
+                title = item.get('title')
+                url = item.get('url')
+                post_time = item.get('a_post_time')
+                if title is None or url is None or post_time is None:
+                    continue
+                post_time = post_time + " 00:00"
+                self.__tiezi_tuple_list.append((title, post_time, item['read_num'], item['comment_num'], ticker_id, url, item['poster_name']))
+            if len(self.__tiezi_tuple_list) >= 1000:
+                self.__db_connection.insertMany(
+                    mysql_config.DATABASE_TABLES['GUBA_LIST'],
+                    self.__tiezi_tuple_list,
+                    "tiezi_title", "publish_time", "click_amount", "comment_amount", "sec_number", "url", "poster")
+                self.__tiezi_tuple_list = []
+        except:
+            traceback.print_exc()
+            pass
         pass

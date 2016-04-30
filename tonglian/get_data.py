@@ -53,7 +53,7 @@ def getIndexBasic():
     file_name = 'index_basic.csv'
     getData(url, file_name)
 
-# 获取某个指数的所有交易日数据    
+# 获取某个股票的所有交易日数据    
 def getIndexTradeDay(ticker):
     t = Template('/api/market/getMktIdxd.csv?field=&beginDate=&endDate=&indexID=&ticker=$tick&tradeDate=')
     url = t.substitute({"tick": ticker})

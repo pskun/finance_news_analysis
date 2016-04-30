@@ -21,6 +21,7 @@ GIVEN_KEYWORD_DIR = os.path.join(ANALYZE_DATA_DIR, 'given_keywords')
 CRAWL_FILE_NAMES = {
     u"eastmoney": r'EastMoneyNewsSpider.json',
     u"guba": r'EastMoneyGubaSpider.json',
+    u"guba_list": r'EastMoneyGubaListSpider-bak.json',
 }
 for key in CRAWL_FILE_NAMES:
     CRAWL_FILE_NAMES[key] = os.path.join(CRAWL_DIR, CRAWL_FILE_NAMES[key])

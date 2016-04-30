@@ -67,7 +67,7 @@ class MySQLConnection(object):
             keys = args
             query += "(" + ",".join(["`%s`"] * len(keys)) % keys + ")"
             query += " VALUES(" + ",".join(["%s"] * len(keys)) + ")"
-        print query
+        # print query
         self.__session.executemany(query, values_list)
         pass
 

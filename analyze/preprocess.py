@@ -12,6 +12,7 @@ from analyze_settings import *
 from preprocess_pipeline import NewsPipeline
 from preprocess_pipeline import GubaPipeline
 from preprocess_pipeline import NewsDBInsertionPipeline
+from preprocess_pipeline import GubaDBInsertionPipeline
 from utils import threadpool
 from database import mysql_pool, mysql_config
 
@@ -40,6 +41,31 @@ class NewsPreprocessHandler(threadpool.Handler):
                 data_item = self.__newsPipe.process_item(data_item)
             if data_item is not None:
                 data_item = self.__dbPipe.process_item(data_item)
+        except KeyboardInterrupt:
+            try:
+                sys.exit(0)
+            except SystemExit:
+                os._exit(0)
+        pass
+
+    def clear_handler(self):
+        self.__dbPipe.after_process()
+        pass
+
+
+class GubaListPreprocessHandler(threadpool.Handler):
+
+    def __init__(self, news_website):
+        self.__news_website = news_website
+        self.__dbPipe = GubaDBInsertionPipeline(self.__news_website)
+
+    def init_handler(self):
+        self.__dbPipe.before_process()
+        pass
+
+    def process_function(self, data_item):
+        try:
+            data_item = self.__dbPipe.process_item(data_item)
         except KeyboardInterrupt:
             try:
                 sys.exit(0)
@@ -111,6 +137,33 @@ def preprocess_news(news_website):
     pool.wait_completion()
     pass
 
+# 对股吧列表数据进行预处理，主要是清洗然后插入数据库
+def preprocess_guba_list(news_website):
+    pool = threadpool.ThreadPool(PIPELINE_THREAD_SIZE)
+    # add customer threadpool worker
+    for i in range(PIPELINE_THREAD_SIZE):
+        h = GubaListPreprocessHandler(news_website)
+        h.init_handler()
+        pool.add_handler(h)
+    pool.startAll()
+    # open wrong output log
+    wrong_output = codecs.open(
+        WRONG_PREPROCESS_OUTPUT, 'w', 'utf-8', errors='ignore')
+    # open todo file
+    for line in codecs.open(CRAWL_FILE_NAMES[news_website], 'r', 'utf-8', errors='ignore'):
+        try:
+            line = line.strip().replace(u'\xa0', u' ')
+            data_item = json.loads(line)
+            if data_item is not None:
+                pool.add_process_data(data_item)
+        except:
+            # traceback.print_exc()
+            wrong_output.write(line + '\n')
+            continue
+    sys.stderr.write("Read guba list file completed.\n")
+    pool.wait_completion()
+    pass
+
 
 # 对股吧数据进行预处理，主要是清洗和插入数据库
 def preprocess_guba(guba_website):
@@ -129,17 +182,11 @@ def preprocess_guba(guba_website):
     for line in codecs.open(
             CRAWL_FILE_NAMES[guba_website], 'r', 'utf-8',
             errors='ignore'):
-        line_count += 1
         try:
             line = line.strip().replace(u'\xa0', u' ')
             data_item = json.loads(line)
             if data_item is not None:
                 pool.add_process_data(data_item)
-            if line_count >= 10000:
-                mem = psutil.virtual_memory()
-                if float(mem.used) / float(mem.total) > 0.8:
-                    time.sleep(5)
-                line_count = 0
         except:
             # traceback.print_exc()
             wrong_output.write(line)
@@ -260,6 +307,7 @@ if __name__ == '__main__':
     # preprocess_guba_info(u"guba")
     # preprocess_given_keywords()
     # preprocess_primary_info(u'eastmoney')
-    preprocess_guba(u"guba")
+    # preprocess_guba(u"guba")
     # preprocess_news(u"eastmoney")
+    preprocess_guba_list(u"guba_list")
     pass

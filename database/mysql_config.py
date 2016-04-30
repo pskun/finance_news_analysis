@@ -17,4 +17,5 @@ DATABASE_TABLES = {
     'TABLE_WEB_LIST': 'web_list',
     'TABLE_NEWS_FILE_LIST': 'news_file_list',
     'TABLE_COR_SEC_OF_NEWS': 'cor_sec_of_news',
+    'GUBA_LIST': 'guba_list',
 }

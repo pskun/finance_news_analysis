@@ -67,6 +67,8 @@ class EasymoneyGubaListSpider(CrawlSpider):
                 continue
             except urllib2.HTTPError:
                 continue
+            except:
+                continue
         return None
         pass
 

@@ -1,5 +1,6 @@
 # encoding=utf-8
 
+import psutil
 import sys
 import traceback
 from Queue import Queue
@@ -67,11 +68,18 @@ class ThreadPool(object):
         self.__num_threads = num_threads
         self.__queue = Queue()
         self.__output = Queue()
+        self.__push_count = 0
         pass
 
     def add_process_data(self, data):
         """Add a task to the queue"""
         self.__queue.put(data)
+        self.__push_count += 1
+        if self.__push_count >= 15000:
+            mem = psutil.virtual_memory()
+            if float(mem.used) / float(mem.total) > 0.80:
+                time.sleep(8)
+            self.__push_count = 0
         pass
 
     def wait_completion(self):
