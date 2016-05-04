@@ -9,7 +9,6 @@ from sqlalchemy import create_engine
 
 from mysql_config import DATABASE_CONFIG
 from mysql_connection import MySQLConnection
-from mysql_init import init_mysql
 
 
 class SqlAlchemyPool(object):
@@ -41,7 +40,6 @@ class SqlAlchemyPool(object):
     # End def __new__
 
     def __init__(self, min_conn=2):
-        init_mysql()
         self.__host = DATABASE_CONFIG['HOST']
         self.__user = DATABASE_CONFIG['USER']
         self.__password = DATABASE_CONFIG['PASSWORD']
