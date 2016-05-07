@@ -16,7 +16,7 @@ import urllib2
 from lxml import etree
 
 
-class EasymoneyGubaListSpider(CrawlSpider):
+class EastmoneyGubaListSpider(CrawlSpider):
     name = 'EastMoneyGubaListSpider'
     allowed_domains = ['guba.eastmoney.com']
     start_urls = []

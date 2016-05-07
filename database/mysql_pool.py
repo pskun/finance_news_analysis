@@ -6,38 +6,24 @@ from MySQLdb.cursors import DictCursor
 from DBUtils.PooledDB import PooledDB
 
 from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 from mysql_config import DATABASE_CONFIG
 from mysql_connection import MySQLConnection
 
 
+def singleton(cls, *args, **kw):
+    instances = {}
+
+    def _singleton():
+        if cls not in instances:
+            instances[cls] = cls(*args, **kw)
+        return instances[cls]
+    return _singleton
+
+
+@singleton
 class SqlAlchemyPool(object):
-    ''' Python Class for connecting with MySQL server \
-    and accelerate development project using MySQL'''
-
-    __instance = None
-
-    @staticmethod
-    def getSingleConnection():
-        conn = MySQLdb.connect(
-            DATABASE_CONFIG['HOST'],
-            DATABASE_CONFIG['USER'],
-            DATABASE_CONFIG['PASSWORD'],
-            DATABASE_CONFIG['DATABASE'],
-            charset='utf8',
-            use_unicode=True,
-            cursorclass=DictCursor
-        )
-        wraped_conn = MySQLConnection(conn)
-        return wraped_conn
-
-    # 单例模式
-    def __new__(cls, *args, **kwargs):
-        if not cls.__instance:
-            cls.__instance = super(SqlAlchemyPool, cls).__new__(
-                cls, *args, **kwargs)
-        return cls.__instance
-    # End def __new__
 
     def __init__(self, min_conn=2):
         self.__host = DATABASE_CONFIG['HOST']
@@ -51,13 +37,8 @@ class SqlAlchemyPool(object):
     # End def __init__
 
     def getConnection(self):
-        try:
-            conn = self.__pool.connection()
-            wraped_conn = MySQLConnection(conn)
-            return wraped_conn
-        except MySQLdb.Error as e:
-            sys.stderr.write("Error %d: %s\n" % (e.args[0], e.args[1]))
-            return None
+        DBSession = sessionmaker(bind=self.__engine)
+        return DBSession
     # End def __open
 # End class
 

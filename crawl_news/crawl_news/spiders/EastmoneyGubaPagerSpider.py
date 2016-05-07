@@ -6,7 +6,7 @@ from scrapy.spiders import CrawlSpider
 from ..items import EastMoneyGubaPageNumItem
 
 
-class EasymoneyGubaPagerSpider(CrawlSpider):
+class EastmoneyGubaPagerSpider(CrawlSpider):
     name = 'EastMoneyGubaPagerSpider'
     allowed_domains = ['guba.eastmoney.com']
     start_urls = []
@@ -15,7 +15,7 @@ class EasymoneyGubaPagerSpider(CrawlSpider):
         base_url = 'http://guba.eastmoney.com/list,%s.html'
         for ticker_id in open('ticker_list.txt'):
             url = base_url % ticker_id.strip()
-            yield Request(url, self.get_guba_list_page_num)
+            yield Request(url, self.parse_item)
         pass
 
     def atoi(self, a):

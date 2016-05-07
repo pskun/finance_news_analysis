@@ -6,7 +6,7 @@ from scrapy.spiders import CrawlSpider, Rule
 
 from crawl_news.items import EastMoneyGubaItem
 
-class EasymoneyGubaSpider(CrawlSpider):
+class EastmoneyGubaSpider(CrawlSpider):
     name = 'EastMoneyGubaSpider'
     allowed_domains = ['guba.eastmoney.com']
     start_urls = [
