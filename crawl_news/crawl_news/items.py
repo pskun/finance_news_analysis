@@ -62,6 +62,7 @@ class EastMoneyGubaPageNumItem(scrapy.Item):
 
 class HexunResearchPaperItem(scrapy.Item):
     url = scrapy.Field()                # url
+    b_section = scrapy.Field()          # 研报板块名称
     title = scrapy.Field()              # 标题
     ticker_name = scrapy.Field()        # 股票名称
     ticker_id = scrapy.Field()          # 股票代码
@@ -74,9 +75,5 @@ class HexunResearchPaperItem(scrapy.Item):
     a_post_time = scrapy.Field()        # 发布时间
     yanbao_class = scrapy.Field()       # 研报分类（公司研究、新股、行业研究）
     abstract = scrapy.Field()           # 研报摘要
-    survey_voting_num = scrapy.Field()  # 研报调查投票人数
-    good_ratio = scrapy.Field()         # 认为研报准确的比率
-    general_ratio = scrapy.Field()      # 认为研报一般的比率
-    bad_ratio = scrapy.Field()          # 认为研报很差的比率
     status = scrapy.Field()             # http返回码
     pass

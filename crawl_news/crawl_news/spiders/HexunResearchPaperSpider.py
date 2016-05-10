@@ -14,26 +14,20 @@ class HexunResearchPaperSpider(CrawlSpider):
     start_urls = []
 
     def start_requests(self):
-        page_range = 4496
-        # 公司研究研报url
-        base_url = 'http://yanbao.stock.hexun.com/xgq/gsyj.aspx?1=1&page=%d'
-        for page_index in range(1, page_range + 1):
-            url = base_url % page_index
-            yield Request(url, self.parse_company_list_item)
-        other_url_dict = {
-            'hyyj': 2937,
-            'yjyc': 4559,
-            'qsch': 1179,
-            'clbg': 786
+        base_url = 'http://yanbao.stock.hexun.com/xgq/%s.aspx'
+        page_section_dict = {
+            'gsyj': u"公司研究",
+            'hyyj': u"行业研究",
+            'yjyc': u"业绩预测",
+            'qsch': u"券商晨会",
+            'clbg': u"策略报告",
         }
-        # 其他研究（行业研究、业绩预测、券商晨会、策略报告）研报url
-        base_url = 'http://yanbao.stock.hexun.com/xgq/%s.aspx?1=1&page=%d'
-        for section_short_name in other_url_dict:
-            page_range = other_url_dict[section_short_name]
-            for page_index in range(1, page_range + 1):
-                url = base_url % (section_short_name, page_index)
-                yield Request(url, self.parse_other_list_item)
-        pass
+        for section_short_name in page_section_dict:
+            url = base_url % section_short_name
+            yield Request(
+                url=url,
+                meta={'section': page_section_dict[section_short_name]},
+                callback=self.parse_index_page_item)
 
     def atoi(self, a):
         try:
@@ -49,18 +43,42 @@ class HexunResearchPaperSpider(CrawlSpider):
             f = None
         return f
 
+    def parse_index_page_item(self, response):
+        base_url = response.url
+        # 找到总页数
+        page_num = response.xpath(
+            '//div[@class="hx_paging"]/ul/li[10]/a/text()').extract()
+        page_num = self.atoi(page_num[0])
+        self.logger.debug("url: " + base_url + "\tpage_num: " + str(page_num))
+        base_url += "?1=1&page=%d"
+        # 解析首页
+        if 'gsyj' in base_url:
+            recall_func = self.parse_company_list_item
+        else:
+            recall_func = self.parse_other_list_item
+        recall_func(response)
+        for page_index in range(2, page_num + 1):
+            url = base_url % page_index
+            yield Request(
+                url=url,
+                meta={'section': response.meta['section']},
+                callback=recall_func)
+        pass
+
     def parse_other_list_item(self, response):
         base_url = get_base_url(response)
+        section = response.meta['section']
         yaobao_table_items = response.xpath(
             '//div[@class="table"]/table//tr')
         # self.logger.debug("".join(response.xpath('//div[@class="table"]').extract()))
         for i in range(1, len(yaobao_table_items)):
             yb_item = yaobao_table_items[i]
-            # 股票名称
+            # 机构名称
             poster_name = yb_item.xpath('./td[1]/a/text()').extract()
             poster_name = "".join(poster_name)
+            # self.logger.debug("poster_name: " + poster_name)
             # 研报标题
-            title = yb_item.xpath('./td[2]/a/text()').extract()
+            title = yb_item.xpath('./td[3]/a/text()').extract()
             title = "".join(title)
             # 研报url
             url = yb_item.xpath('./td[3]/a/@href').extract()
@@ -76,6 +94,7 @@ class HexunResearchPaperSpider(CrawlSpider):
             scrapy_item['title'] = title
             scrapy_item['poster_name'] = poster_name
             scrapy_item['a_post_time'] = a_post_time
+            scrapy_item['b_section'] = section
             yield Request(
                 url=url,
                 meta={'item': scrapy_item},
@@ -84,8 +103,8 @@ class HexunResearchPaperSpider(CrawlSpider):
         pass
 
     def parse_company_list_item(self, response):
-        # list_url = response.url
         base_url = get_base_url(response)
+        section = response.meta['section']
         yaobao_table_items = response.xpath(
             '//div[@class="table"]/table//tr')
         # self.logger.debug("".join(response.xpath('//div[@class="table"]').extract()))
@@ -148,6 +167,7 @@ class HexunResearchPaperSpider(CrawlSpider):
             scrapy_item['rating_change'] = rating_change
             scrapy_item['upside'] = upside
             scrapy_item['a_post_time'] = a_post_time
+            scrapy_item['b_section'] = section
             yield Request(
                 url=url,
                 meta={'item': scrapy_item},
@@ -167,30 +187,9 @@ class HexunResearchPaperSpider(CrawlSpider):
             '//div[@class="yj_bglc"]/p[@class="txt_02"]/text()').extract()
         abstract = "".join(abstract).strip()
         # self.logger.debug("abstract: " + abstract)
-        # 调查投票人数
-        survey_voting_num = response.xpath(
-            '//div[@class="vote"]/div[@class="allSum"]//span[@id="sum"]/text()').extract()
-        survey_voting_num = self.atoi("".join(survey_voting_num))
-        # self.logger.debug("survey_voting_num: " + str(survey_voting_num))
-        good_ratio = response.xpath(
-            '//div[@id="vote"]/cite[@class="henzs"]/b/text()').extract()
-        good_ratio = self.atof("".join(good_ratio))
-        # self.logger.debug("good_ratio: " + str(good_ratio))
-        general_ratio = response.xpath(
-            '//div[@id="vote"]/cite[@class="yibs"]/b/text()').extract()
-        general_ratio = self.atof("".join(general_ratio))
-        # self.logger.debug("general_ratio: " + str(general_ratio))
-        bad_ratio = response.xpath(
-            '//div[@id="vote"]/cite[@class="buzs"]/b/text()').extract()
-        bad_ratio = self.atof("".join(bad_ratio))
-        # self.logger.debug("bad_ratio: " + str(bad_ratio))
         # 插入scrapy item中
         item['yanbao_class'] = yanbao_class
         item['abstract'] = abstract
-        item['survey_voting_num'] = survey_voting_num
-        item['good_ratio'] = good_ratio
-        item['general_ratio'] = general_ratio
-        item['bad_ratio'] = bad_ratio
         # 除了公司研究列表中都没有研究员，需要在详情页中抓取
         if 'analyst_name' not in item:
             analyst_name = response.xpath(
