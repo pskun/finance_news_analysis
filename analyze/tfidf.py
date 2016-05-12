@@ -76,13 +76,7 @@ def processIDF():
             if content is not None:
                 tfidf.addDocument(content)
         except:
-            '''
-            try:
-                sys.stderr.write(line+'\n')
-            except:
-                pass
-            '''
-            pass
+            continue
     tfidf.calculateIDF()
     tfidf.dumpIDFDict(idf_file)
     tfidf.clear()

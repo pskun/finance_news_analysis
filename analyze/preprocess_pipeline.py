@@ -1,5 +1,10 @@
 # encoding=utf-8
 
+'''
+    多线程处理新闻、股吧、研报数据的模块
+    每个函数被一个线程调用
+'''
+
 import os
 import sys
 import traceback
@@ -21,6 +26,7 @@ locale.setlocale(locale.LC_CTYPE, 'chinese')
 
 
 class BasicPipeline(object):
+    ''' 处理pipeline的基类 '''
     def __init__(self):
         pass
 
@@ -102,6 +108,7 @@ class NewsPipeline(BasicPipeline):
         pass
 
     def extractKeywords(self, content):
+        ''' 抽取正文关键词 '''
         all_type_keywords = self.__keywordExtractor.extractGivenKeywords(
             content)
         return all_type_keywords
@@ -119,6 +126,7 @@ class NewsPipeline(BasicPipeline):
 
 
 class NewsDBInsertionPipeline(BasicPipeline):
+    ''' 新闻插入数据库pipeline '''
     def __init__(self, news_website):
         self.__db_handler = None
         self.__db_connection = None
@@ -205,7 +213,7 @@ class NewsDBInsertionPipeline(BasicPipeline):
 
     def process_item(self, data):
         try:
-            # 插入新闻
+            # 插入新闻至news_list中
             news_id = self.__db_connection.insertOne(
                 mysql_config.DATABASE_TABLES['TABLE_NEWS_LIST'],
                 news_title=data['title'],
@@ -215,7 +223,7 @@ class NewsDBInsertionPipeline(BasicPipeline):
                 web_id=self.__web_id,
                 news_file_id=self.__news_file_id,
                 poster=data.get('poster'))
-            # 插入关键字
+            # 插入新闻提取的关键字至rel_news_keywords中
             news_keywords = data.get('all_type_keywords')
             if news_keywords is not None:
                 for kw_type in news_keywords:
@@ -332,7 +340,9 @@ class GubaDBInsertionPipeline(BasicPipeline):
             self.__db_connection.insertMany(
                 mysql_config.DATABASE_TABLES['GUBA_LIST'],
                 self.__tiezi_tuple_list,
-                "title", "publish_time", "click_amount", "comment_amount", "sec_number", "url")
+                "title", "publish_time",
+                "click_amount", "comment_amount",
+                "sec_number", "url")
         pass
 
     def process_item(self, data):
@@ -352,7 +362,9 @@ class GubaDBInsertionPipeline(BasicPipeline):
                 self.__db_connection.insertMany(
                     mysql_config.DATABASE_TABLES['GUBA_LIST'],
                     self.__tiezi_tuple_list,
-                    "tiezi_title", "publish_time", "click_amount", "comment_amount", "sec_number", "url", "poster")
+                    "tiezi_title", "publish_time",
+                    "click_amount", "comment_amount",
+                    "sec_number", "url", "poster")
                 self.__tiezi_tuple_list = []
         except:
             traceback.print_exc()

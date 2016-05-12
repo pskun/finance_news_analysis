@@ -5,6 +5,8 @@ import jieba
 import jieba.analyse
 import esm
 
+from analyze_settings import IDF_FILE
+
 
 class KeywordExtractor(object):
     def __init__(self):
@@ -67,7 +69,9 @@ class KeywordExtractor(object):
 
 
 def main():
-
+    extractor = KeywordExtractor()
+    extractor.initTfidfKeywords(idf_file=IDF_FILE)
+    for line in 
     pass
 
 

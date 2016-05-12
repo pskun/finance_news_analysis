@@ -11,7 +11,6 @@ import random
 from ..settings import USER_AGENTS
 
 import math
-import csv
 import urllib2
 from lxml import etree
 
@@ -20,21 +19,35 @@ class EastmoneyGubaListSpider(CrawlSpider):
     name = 'EastMoneyGubaListSpider'
     allowed_domains = ['guba.eastmoney.com']
     start_urls = []
+    headers = {
+        'User-Agent': random.choice(USER_AGENTS),
+        'Accept': r'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'zh-CN,zh;q=0.8',
+        'Accept-Encoding': 'gzip, deflate, sdch',
+    }
+    incremental_logging_file = r'%s_incre.log' % name
+
+    def __init__(self, incremental=False, *args, **kwargs):
+        '''
+        Args:
+            incremental: 是否增量爬取
+        '''
+        super(EastmoneyGubaListSpider, self).__init__(*args, **kwargs)
+        self.incremental = incremental
+        if self.incremental:
+            
+        pass
 
     def start_requests(self):
-        base_url = 'http://guba.eastmoney.com/list,%s_%d.html'
-        reader = csv.reader(file('ticker_pager.csv', 'r'))
+        base_url = 'http://guba.eastmoney.com/list,%s_1.html'
+        reader = open('ticker_list.txt', 'r')
         for line in reader:
-            if reader.line_num == 1:
-                continue
-            ticker_id = line[3]
-            total_count = line[1]
-            num_per_page = line[2]
-            page_count = int(
-                math.ceil(float(total_count) / float(num_per_page)))
-            for i in range(page_count):
-                url = base_url % (ticker_id, i + 1)
-                yield Request(url, self.parse_item)
+            ticker_id = line.strip()
+            url = base_url % ticker_id
+            if self.incremental:
+                yield Request(url, self.parse_incremental)
+            else:
+                yield Request(url, self.parse_index_page)
         pass
 
     def atoi(self, a):
@@ -45,14 +58,8 @@ class EastmoneyGubaListSpider(CrawlSpider):
         return a
 
     def get_guba_post_year(self, url):
-        headers = {
-            'User-Agent': random.choice(USER_AGENTS),
-            'Accept': r'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'zh-CN,zh;q=0.8',
-            'Accept-Encoding': 'gzip, deflate, sdch',
-        }
         retry_times = 10
-        req = urllib2.Request(url=url, headers=headers)
+        req = urllib2.Request(url=url, headers=EastmoneyGubaListSpider.headers)
         for i in range(retry_times):
             try:
                 response = urllib2.urlopen(req, timeout=10)
@@ -60,6 +67,8 @@ class EastmoneyGubaListSpider(CrawlSpider):
                 html = etree.HTML(html.lower().decode('utf-8'))
                 post_time = html.xpath('//div[@class="zwfbtime"]/text()')
                 post_time = "".join(post_time).strip()
+                if post_time is None:
+                    return None
                 post_time = post_time.split(" ")[1]
                 year = post_time.split('-')[0]
                 return year
@@ -72,8 +81,31 @@ class EastmoneyGubaListSpider(CrawlSpider):
         return None
         pass
 
-    # def parse(self, response):
-    def parse_item(self, response):
+    def parse_index_page(self, response):
+        ''' 解析股吧列表第一页的信息 '''
+        list_url = response.url
+        ticker_id = list_url.split(',')[1][0:6]
+        # 获得分页信息
+        pager_info = response.xpath(
+            '//span[@class="pagernums"]/@data-pager').extract()
+        pager_info = "".join(pager_info).split("|")
+        total_count = self.atoi(pager_info[1])
+        num_per_page = self.atoi(pager_info[2])
+        page_count = int(
+            math.ceil(float(total_count) / float(num_per_page)))
+        self.parse_list_item(response)
+        base_url = 'http://guba.eastmoney.com/list,%s_%d.html'
+        for i in range(2, page_count + 1):
+            url = base_url % (ticker_id, i)
+            yield Request(url, self.parse_list_item)
+        pass
+
+    def parse_incremental(self, response):
+        ''' 增量式爬取：根据上次爬取的日期，爬取上次日期之后至今日的所有股吧列表 '''
+        pass
+
+    def parse_list_item(self, response):
+        ''' 解析股吧的列表 '''
         eastmoney_guba_list_item = EastMoneyGubaListItem()
 
         if response.status != 200:
@@ -87,14 +119,7 @@ class EastmoneyGubaListSpider(CrawlSpider):
         ticker_name = ticker_name = ("".join(ticker_name).strip())[0:-1]
         ticker_id = list_url.split(',')[1][0:6]
         tiezi_item = response.xpath('//div[contains(@class,"articleh")]')
-        '''
-        title = response.xpath('//div[contains(@class,"articleh")]/span/a/@title').extract()
-        urls = response.xpath('//div[contains(@class,"articleh")]/span[@class="l3"]/a/@href').extract()
-        a_post_time = response.xpath('//div[contains(@class,"articleh")]/span[@class="l6"]/text()').extract()
-        poster_name = response.xpath('//div[contains(@class,"articleh")]/span[@class="l4"]//text()').extract()
-        read_num = response.xpath('//div[contains(@class,"articleh")]/span[@class="l1"]//text()').extract()
-        comment_num = response.xpath('//div[contains(@class,"articleh")]/span[@class="l2"]//text()').extract()
-        '''
+
         month_dict = {}
         output_list = []
         for item in tiezi_item:

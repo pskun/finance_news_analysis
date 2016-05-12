@@ -10,6 +10,7 @@ from sqlalchemy.orm import sessionmaker
 
 from mysql_config import DATABASE_CONFIG
 from mysql_connection import MySQLConnection
+from mysql_orm_conn import MySQLORMConnection
 
 
 def singleton(cls, *args, **kw):
@@ -33,16 +34,18 @@ class SqlAlchemyPool(object):
         conn_info = "mysql://" + self.__user + ":" + \
             self.__password + "@" + self.__host + "/" + self.__database
         self.__engine = create_engine(
-            conn_info, encoding='utf-8', pool_size=20, max_overflow=0)
-    # End def __init__
+            conn_info, encoding='utf-8',
+            pool_size=20, max_overflow=0, convert_unicode=True)
+        pass
 
     def getConnection(self):
         DBSession = sessionmaker(bind=self.__engine)
-        return DBSession
-    # End def __open
-# End class
+        wraped_conn = MySQLORMConnection(DBSession)
+        return wraped_conn
+        pass
 
 
+@singleton
 class MySQLPool(object):
     ''' Python Class for connecting with MySQL server \
     and accelerate development project using SqlAlchemy'''
@@ -63,16 +66,7 @@ class MySQLPool(object):
         wraped_conn = MySQLConnection(conn)
         return wraped_conn
 
-    # 单例模式
-    def __new__(cls, *args, **kwargs):
-        if not cls.__instance:
-            cls.__instance = super(MySQLPool, cls).__new__(
-                cls, *args, **kwargs)
-        return cls.__instance
-    # End def __new__
-
     def __init__(self, min_conn=2):
-        init_mysql()
         self.__host = DATABASE_CONFIG['HOST']
         self.__user = DATABASE_CONFIG['USER']
         self.__password = DATABASE_CONFIG['PASSWORD']

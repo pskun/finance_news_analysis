@@ -4,9 +4,6 @@ import os
 import sys
 import codecs
 import json
-import traceback
-import psutil
-import time
 
 from analyze_settings import *
 from preprocess_pipeline import NewsPipeline
@@ -108,8 +105,8 @@ class GubaPreprocessHandler(threadpool.Handler):
         pass
 
 
-# 对新闻数据进行预处理，主要是清洗然后插入数据库
 def preprocess_news(news_website):
+    ''' 对新闻数据进行预处理，主要是清洗然后插入数据库 '''
     pool = threadpool.ThreadPool(PIPELINE_THREAD_SIZE)
     # add customer threadpool worker
     for i in range(PIPELINE_THREAD_SIZE):
@@ -137,12 +134,13 @@ def preprocess_news(news_website):
     pool.wait_completion()
     pass
 
-# 对股吧列表数据进行预处理，主要是清洗然后插入数据库
-def preprocess_guba_list(news_website):
+
+def preprocess_guba_list(guba_list_website):
+    ''' 对股吧列表数据进行预处理，主要是清洗然后插入数据库 '''
     pool = threadpool.ThreadPool(PIPELINE_THREAD_SIZE)
     # add customer threadpool worker
     for i in range(PIPELINE_THREAD_SIZE):
-        h = GubaListPreprocessHandler(news_website)
+        h = GubaListPreprocessHandler(guba_list_website)
         h.init_handler()
         pool.add_handler(h)
     pool.startAll()
@@ -150,7 +148,7 @@ def preprocess_guba_list(news_website):
     wrong_output = codecs.open(
         WRONG_PREPROCESS_OUTPUT, 'w', 'utf-8', errors='ignore')
     # open todo file
-    for line in codecs.open(CRAWL_FILE_NAMES[news_website], 'r', 'utf-8', errors='ignore'):
+    for line in codecs.open(CRAWL_FILE_NAMES[guba_list_website], 'r', 'utf-8', errors='ignore'):
         try:
             line = line.strip().replace(u'\xa0', u' ')
             data_item = json.loads(line)
@@ -196,6 +194,7 @@ def preprocess_guba(guba_website):
 
 
 def preprocess_given_keywords():
+    ''' 向数据库表中插入给定的关键字 '''
     kwfiles_id = {}
     conn = mysql_pool.MySQLPool.getSingleConnection()
     # 插入关键字类型
@@ -218,7 +217,8 @@ def preprocess_given_keywords():
     pass
 
 
-def preprocess_primary_info(news_website):
+def preprocess_news_info(news_website):
+    ''' 向数据库中插入新闻的基本信息 '''
     # get connection
     conn = mysql_pool.MySQLPool.getSingleConnection()
     web_id = conn.insertOne(
@@ -270,6 +270,7 @@ def preprocess_primary_info(news_website):
 
 
 def preprocess_guba_info(guba_website):
+    ''' 向数据库中插入股吧的基本信息 '''
     # get connection
     conn = mysql_pool.MySQLPool.getSingleConnection()
     web_id = conn.insertOne(
@@ -294,19 +295,9 @@ def preprocess_guba_info(guba_website):
 if __name__ == '__main__':
     os.chdir(BASE_DIR)
     sys.path.append(os.path.abspath(BASE_DIR))
-    '''
-    if len(sys.argv) == 1:
-        sys.stderr.write(
-            "Usage: python %s -t preprocess_type [-w website_name]\n"
-            % sys.argv[0])
-        sys.stderr.write("type:\n")
-        sys.stderr.write(
-            "\tnews_type\n\tkeyword_type\n\tbasic_type\n\tguba_type\n")
-        sys.exit(1)
-    '''
     # preprocess_guba_info(u"guba")
     # preprocess_given_keywords()
-    # preprocess_primary_info(u'eastmoney')
+    # preprocess_news_info(u'eastmoney')
     # preprocess_guba(u"guba")
     # preprocess_news(u"eastmoney")
     preprocess_guba_list(u"guba_list")

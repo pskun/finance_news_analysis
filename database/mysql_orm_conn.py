@@ -5,6 +5,7 @@ class MySQLORMConnection(object):
 
     # 构造函数
     def __init__(self, conn):
+        self.__orm_session = conn
         pass
     # End def __init__
 
@@ -20,11 +21,15 @@ class MySQLORMConnection(object):
     def endTransaction(self, option='commit'):
         pass
 
-    def insertOne(self, table, *args, **kwargs):
+    def insertOne(self, object):
+        self.__orm_session.add(object)
+        self.__orm_session.commit()
         pass
     # End def insert
 
-    def insertMany(self, table, values_list=None, *args):
+    def insertMany(self, object_list):
+        self.__orm_session.bulk_save_objects(object_list)
+        self.__orm_session.commit()
         pass
 
     def select(self, table, where=None, *args, **kwargs):
