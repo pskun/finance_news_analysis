@@ -3,7 +3,7 @@
 from scrapy.linkextractors import LinkExtractor
 from scrapy.spiders import CrawlSpider, Rule
 
-from ..items import EastMoneyNewsItem
+from ..items import NewsItem
 
 
 class EastmoneyNewsSpider(CrawlSpider):
@@ -48,7 +48,7 @@ class EastmoneyNewsSpider(CrawlSpider):
 
     # def parse(self, response):
     def parse_news_item(self, response):
-        item = EastMoneyNewsItem()
+        item = NewsItem()
 
         if response.status != 200:
             item['status'] = response.status

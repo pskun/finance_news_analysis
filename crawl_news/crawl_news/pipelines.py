@@ -16,6 +16,8 @@ from scrapy import signals
 from scrapy.exceptions import DropItem
 from scrapy.exceptions import CloseSpider
 
+# from incremental import get_last_crawl_date, log_spider
+
 
 class CrawlPipeline(object):
 
@@ -33,6 +35,11 @@ class CrawlPipeline(object):
     def spider_opened(self, spider):
         file = codecs.open('%s.json' % spider.name, 'a+b', 'utf-8', 'ignore')
         self.files[spider.name] = file
+        if spider.incremental:
+            # 如果是增量式爬取
+            # incremental_logging_file = r'%s_incre.log' % spider.name
+            pass
+        pass
 
     def spider_closed(self, spider):
         file = self.files.pop(spider.name)
@@ -70,7 +77,7 @@ class CrawlPipeline(object):
         self.write_to_file(item, spider.name)
         pass
 
-    def process_eastmoney_newsguba_item(self, item, spider):
+    def process_newsguba_item(self, item, spider):
         if 'title' not in item or 'a_post_time' not in item:
             raise DropItem(u'缺失title或者post_time')
         elif item['title'] == "" or item['a_post_time'] == "":
@@ -105,7 +112,9 @@ class CrawlPipeline(object):
         if spider.name == 'HexunResearchPaperSpider':
             return self.process_hexun_yanbao_item(item, spider)
         elif spider.name == 'EastMoneyNewsSpider':
-            return self.process_eastmoney_newsguba_item(item, spider)
+            return self.process_newsguba_item(item, spider)
         elif spider.name == 'EastMoneyGubaSpider':
-            return self.process_eastmoney_newsguba_item(item, spider)
+            return self.process_newsguba_item(item, spider)
+        elif spider.name == 'HexunNewsSpider':
+            return self.process_newsguba_item(item, spider)
         pass

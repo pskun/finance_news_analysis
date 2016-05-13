@@ -8,7 +8,7 @@
 import scrapy
 
 
-class EastMoneyNewsItem(scrapy.Item):
+class NewsItem(scrapy.Item):
     url = scrapy.Field()
     title = scrapy.Field()
     a_post_time = scrapy.Field()
@@ -19,9 +19,9 @@ class EastMoneyNewsItem(scrapy.Item):
     mention_tickers_id = scrapy.Field()
     summary = scrapy.Field()
     status = scrapy.Field()
-    # item_name = scrapy.Field()
-    # comment_nums = scrapy.Field()
-    # discuss_nums = scrapy.Field()
+    comment_num = scrapy.Field()
+    read_num = scrapy.Field()
+    poster_name = scrapy.Field()
     pass
 
 
@@ -44,6 +44,7 @@ class EastMoneyGubaItem(scrapy.Item):
 
 class EastMoneyGubaListItem(scrapy.Item):
     list_url = scrapy.Field()
+    page_id = scrapy.Field()
     status = scrapy.Field()
     ticker_id = scrapy.Field()
     ticker_name = scrapy.Field()
