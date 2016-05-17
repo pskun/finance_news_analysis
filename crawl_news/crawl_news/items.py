@@ -25,7 +25,7 @@ class NewsItem(scrapy.Item):
     pass
 
 
-class EastMoneyGubaItem(scrapy.Item):
+class GubaItem(scrapy.Item):
     url = scrapy.Field()
     title = scrapy.Field()
     a_post_time = scrapy.Field()
@@ -42,7 +42,7 @@ class EastMoneyGubaItem(scrapy.Item):
     pass
 
 
-class EastMoneyGubaListItem(scrapy.Item):
+class GubaListItem(scrapy.Item):
     list_url = scrapy.Field()
     page_id = scrapy.Field()
     status = scrapy.Field()
@@ -53,15 +53,15 @@ class EastMoneyGubaListItem(scrapy.Item):
 
 
 class EastMoneyGubaPageNumItem(scrapy.Item):
-    url = scrapy.Field()
-    status = scrapy.Field()
-    ticker_id = scrapy.Field()
-    total_count = scrapy.Field()
-    num_per_page = scrapy.Field()
+    url = scrapy.Field()                # url
+    status = scrapy.Field()             # http返回状态
+    ticker_id = scrapy.Field()          # 股票代码
+    total_count = scrapy.Field()        # 列表页数
+    num_per_page = scrapy.Field()       # 一页列表有多少项
     pass
 
 
-class HexunResearchPaperItem(scrapy.Item):
+class ResearchPaperItem(scrapy.Item):
     url = scrapy.Field()                # url
     b_section = scrapy.Field()          # 研报板块名称
     title = scrapy.Field()              # 标题

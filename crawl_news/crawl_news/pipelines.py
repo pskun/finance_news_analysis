@@ -87,6 +87,7 @@ class CrawlPipeline(object):
         if 'content' in item:
             item['content'] = "".join(item['content'].split('\n'))
         self.write_to_file(item, spider.name)
+        return item
         pass
 
     def process_eastmoney_gubalist_item(self, item, spider):
@@ -116,5 +117,7 @@ class CrawlPipeline(object):
         elif spider.name == 'EastMoneyGubaSpider':
             return self.process_newsguba_item(item, spider)
         elif spider.name == 'HexunNewsSpider':
+            return self.process_newsguba_item(item, spider)
+        elif spider.name == 'JinrongjieNewsSpider':
             return self.process_newsguba_item(item, spider)
         pass

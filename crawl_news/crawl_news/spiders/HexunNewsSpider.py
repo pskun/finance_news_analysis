@@ -8,7 +8,7 @@ from ..items import NewsItem
 
 class HexunNewsSpider(CrawlSpider):
     name = 'HexunNewsSpider'
-    allowed_domains = ['stock.hexun.com']
+    allowed_domains = ['hexun.com']
     start_urls = []
     incremental = False
 
@@ -46,7 +46,8 @@ class HexunNewsSpider(CrawlSpider):
             return self.parse_old_version_news_item(response)
         post_time = response.xpath(
             '//span[@id="pubtime_baidu"]/text()').extract()
-        content = response.xpath('//div[@id="artibody"]/p/text()').extract()
+        content = response.xpath('//div[@id="artibody"]/p')
+        content = content.xpath('string(.)').extract()
         section = response.xpath(
             '//div[@id="page_navigation"]/a[2]/text()').extract()
         sub_section = response.xpath(
@@ -91,7 +92,8 @@ class HexunNewsSpider(CrawlSpider):
         sub_section = response.xpath(
             '//div[@class="breadcrumbs"]/div/a[2]/text()').extract()
         content = response.xpath(
-            '//div[@class="detail_cnt"]//text()').extract()
+            '//div[@class="detail_cnt"]').extract()
+        content = content.xpath('string(.)').extract()
         mention_tickers = response.xpath(
             '//div[@class="detail_cnt"]//a[contains(@href, "stockdata")]')
         mention_tickers_name = mention_tickers.xpath('.//text()').extract()

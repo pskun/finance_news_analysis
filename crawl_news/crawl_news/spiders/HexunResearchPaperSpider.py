@@ -5,7 +5,7 @@ from scrapy.spiders import CrawlSpider
 from scrapy.utils.response import get_base_url
 from scrapy.utils.url import urljoin_rfc
 
-from ..items import HexunResearchPaperItem
+from ..items import ResearchPaperItem
 
 
 class HexunResearchPaperSpider(CrawlSpider):
@@ -88,7 +88,7 @@ class HexunResearchPaperSpider(CrawlSpider):
             a_post_time = yb_item.xpath('./td[2]/text()').extract()
             a_post_time = "".join(a_post_time)
             # self.logger.debug("a_post_time: " + a_post_time)
-            scrapy_item = HexunResearchPaperItem()
+            scrapy_item = ResearchPaperItem()
             # 插入scrapy item中
             scrapy_item['url'] = url
             scrapy_item['title'] = title
@@ -154,7 +154,7 @@ class HexunResearchPaperSpider(CrawlSpider):
             a_post_time = yb_item.xpath('./td[9]/text()').extract()
             a_post_time = "".join(a_post_time)
             # self.logger.debug("a_post_time: " + a_post_time)
-            scrapy_item = HexunResearchPaperItem()
+            scrapy_item = ResearchPaperItem()
             # 插入scrapy item中
             scrapy_item['url'] = url
             scrapy_item['title'] = title

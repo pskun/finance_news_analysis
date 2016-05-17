@@ -5,7 +5,7 @@ from scrapy.spiders import CrawlSpider
 from scrapy.utils.response import get_base_url
 from scrapy.utils.url import urljoin_rfc
 
-from ..items import EastMoneyGubaListItem
+from ..items import GubaListItem
 
 import math
 from datetime import datetime, timedelta
@@ -100,7 +100,7 @@ class EastmoneyGubaListSpider(CrawlSpider):
 
     def parse_list_item(self, response):
         ''' 解析股吧的列表 '''
-        eastmoney_guba_list_item = EastMoneyGubaListItem()
+        eastmoney_guba_list_item = GubaListItem()
 
         list_url = response.url
         ticker_name = response.xpath(
