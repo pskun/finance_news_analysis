@@ -1,29 +1,23 @@
 # -*- coding: utf-8 -*-
 
+import traceback
+import logging
+
 from preprocess_settings import *
-from utils import threadpool
+from utils.threadpool import Handler
 from analyze.keyword_extraction import KeywordExtractor
 from database.mysql_pool import MySQLPool
 from database import mysql_config
 
 
-class NewsPreprocessHandler(threadpool.Handler):
-
-    WEB_TABLE = mysql_config.DATABASE_TABLES['TABLE_WEB_LIST']
-    NEWS_FILE_TABLE = mysql_config.DATABASE_TABLES['TABLE_NEWS_FILE_LIST']
-    KP_TABLE = mysql_config.DATABASE_TABLES['TABLE_KEYWORDS_PROPERTY']
-    KEYWORD_TABLE = mysql_config.DATABASE_TABLES['TABLE_KEYWORDS_LIST']
-    NEWS_TABLE = mysql_config.DATABASE_TABLES['TABLE_NEWS_LIST']
-    PAGE_TABLE = mysql_config.DATABASE_TABLES['TABLE_PAGE_LIST']
-    KEYWORD_NEWS_TABLE = mysql_config.DATABASE_TABLES[
-        'TABLE_RELATION_KEYWORDS_NEWS']
-    TICKER_NEWS_TABLE = mysql_config.DATABASE_TABLES['TABLE_COR_SEC_OF_NEWS']
+class NewsPreprocessHandler(Handler):
 
     def __init__(self, website_name):
         self.website_name = website_name
         self.keyword_extractor = KeywordExtractor()
         self.db_session = None
         # 数据库批量插入的列表缓存
+        self.bat_insert_num = 1
         self.news_tuple_list = []
         self.news_tickers_tuple_list = []
         self.news_keywords_tuple_list = []
@@ -35,11 +29,14 @@ class NewsPreprocessHandler(threadpool.Handler):
         self.keyword_property = {}
         self.keywords = {}
         self.news_id_counter = 1
+        # 日志
+        logging.basicConfig(level=logging.DEBUG)
+        self.logger = logging.getLogger(__name__)
 
     def init_handler(self):
         ''' 初始化handler '''
         # 初始化数据库连接
-        self.db_session = MySQLPool.getSingleConnection()
+        self.db_session = MySQLPool().getConnection()
         # 载入关键词
         for keyword_type in GIVEN_KEYWORD_FILES:
             kfile = os.path.join(
@@ -63,23 +60,38 @@ class NewsPreprocessHandler(threadpool.Handler):
         pass
 
     def clear_handler(self):
-        self.__dbPipe.after_process()
+        if len(self.news_tuple) > 0:
+            self.db_session.insertMany(
+                mysql_config.TABLE_NEWS,
+                self.news_tuple_list,
+                "news_id", "news_title", "publish_time", "abstract",
+                "page_id", "web_id", "news_file_id", "poster")
+        if len(self.news_tickers_tuple_list) > 0:
+            self.__db_connection.insertMany(
+                mysql_config.TABLE_NEWS_SEC,
+                self.__news_tickers_tuple_list,
+                "news_id", "sec_number")
+        if len(self.news_keywords_tuple_list) > 0:
+            self.db_session.insertMany(
+                mysql_config.TABLE_KEYWORDS_NEWS,
+                self.news_keywords_tuple_list,
+                "amount_keywords_in_news", "keywords_id", "news_id")
         pass
 
     def query_basic_info(self):
         # 网站id
-        self.web_id = self.db_session.selectOne(
-            self.__class__.WEB_TABLE,
+        self.web_id = self.db_session.select(
+            mysql_config.TABLE_WEB,
             "web_name=\"%s\"" % self.website_name,
-            "web_id")
+            False, "web_id")
         # 新闻文件id
         self.news_file_id = self.db_session.select(
-            self.__class__.NEWS_FILE_TABLE,
+            mysql_config.TABLE_NEWS_FILE,
             "web_id=\"%s\"" % self.web_id,
-            "news_file_id")
+            False, "news_file_id")
         # 板块id
         result = self.db_session.select(
-            self.__class__.PAGE_TABLE, None,
+            mysql_config.TABLE_PAGE, None, True,
             "page_id",
             "page_name",
             "page_level")
@@ -93,7 +105,7 @@ class NewsPreprocessHandler(threadpool.Handler):
                 self.sub_section_ids[page_name] = page_id
         # 关键字属性id
         result = self.db_session.select(
-            self.__class__.KP_TABLE, None,
+            mysql_config.TABLE_KEYWORDS_PROPERTY, None, True,
             "keywords_property_id",
             "keywords_property_col")
         # 对所有返回的关键字属性结果
@@ -102,13 +114,13 @@ class NewsPreprocessHandler(threadpool.Handler):
                 'keywords_property_id']
         # 关键字id
         result = self.db_session.select(
-            KEYWORD_TABLE, None,
+            mysql_config.TABLE_KEYWORDS, None, True,
             "keywords_id", "keywords",
             "keywords_property_id")
         for item in result:
             kp_id = item['keywords_property_id']
             if kp_id not in self.keywords:
-                self.keywords[kp] = {}
+                self.keywords[kp_id] = {}
             self.keywords[kp_id][item['keywords']] = item['keywords_id']
         pass
 
@@ -157,12 +169,14 @@ class NewsPreprocessHandler(threadpool.Handler):
 
     def insert_section_info(self, section_name, level, parent_section=None):
         page_id = self.db_session.insertOne(
-            PAGE_TABLE, page_name=section_name, page_level=level)
+            mysql_config.TABLE_PAGE,
+            page_name=section_name, page_level=level)
         return page_id
 
     def insert_news_info(self, news_id, data):
         # 判断板块信息是否已经存在
         page_id = None
+        self.logger.debug(data)
         sub_section = data['c_sub_section']
         if sub_section not in self.sub_section_ids:
             parent_page_id = None
@@ -191,9 +205,9 @@ class NewsPreprocessHandler(threadpool.Handler):
             poster=data.get('poster')
         )
         self.news_tuple_list.append(news_tuple)
-        if len(self.news_tuple_list) >= 800:
+        if len(self.news_tuple_list) >= self.bat_insert_num:
             self.db_session.insertMany(
-                NEWS_TABLE,
+                mysql_config.TABLE_NEWS,
                 self.news_tuple_list,
                 "news_id", "news_title", "publish_time", "abstract",
                 "page_id", "web_id", "news_file_id", "poster")
@@ -218,7 +232,7 @@ class NewsPreprocessHandler(threadpool.Handler):
                     self.news_keywords_tuple_list.append(keyword_tuple)
         if len(self.__news_keywords_tuple_list) >= 800:
             self.db_session.insertMany(
-                KEYWORD_NEWS_TABLE,
+                mysql_config.TABLE_KEYWORDS_NEWS,
                 self.news_keywords_tuple_list,
                 "amount_keywords_in_news", "keywords_id", "news_id")
             self.news_keywords_tuple_list = []
@@ -231,7 +245,7 @@ class NewsPreprocessHandler(threadpool.Handler):
                 self.__news_tickers_tuple_list.append((news_id, ticker))
         if len(self.__news_tickers_tuple_list) >= 800:
             self.__db_connection.insertMany(
-                TICKER_NEWS_TABLE,
+                mysql_config.TABLE_NEWS_SEC,
                 self.__news_tickers_tuple_list,
                 "news_id", "sec_number")
             self.__news_tickers_tuple_list = []
@@ -246,7 +260,9 @@ class NewsPreprocessHandler(threadpool.Handler):
             self.insert_keyword_info(news_id, data)
             # 插入股票新闻关联表
             self.insert_ticker_info(news_id, data)
+            self.news_id_counter += 1
         except:
+            traceback.print_exc()
             pass
         pass
 

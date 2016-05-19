@@ -67,11 +67,11 @@ class MySQLConnection(object):
             keys = args
             query += "(" + ",".join(["`%s`"] * len(keys)) % keys + ")"
             query += " VALUES(" + ",".join(["%s"] * len(keys)) + ")"
-        # print query
+        print query
         self.__session.executemany(query, values_list)
         pass
 
-    def select(self, table, where=None, *args, **kwargs):
+    def select(self, table, where=None, fetchall=True, *args, **kwargs):
         result = None
         query = 'SELECT '
         keys = args
@@ -98,11 +98,13 @@ class MySQLConnection(object):
         else:
             result = [item.values()[0] for item in self.__session.fetchall()]
             print result
+        if not fetchall and result is not None:
+            result = result[0]
         return result
     # End def select
 
     def selectOne(self, table, where=None, *args, **kwargs):
-        result = self.select(table, where=None, args, kwargs)
+        result = self.select(table, where, args, kwargs)
         if result is not None and len(result) > 0:
             return result[0]
         else:

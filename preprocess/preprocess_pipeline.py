@@ -14,9 +14,9 @@ import locale
 import json
 from bson import json_util
 
-from analyze_settings import *
+from preprocess_settings import *
 
-from keyword_extraction import KeywordExtractor
+from analyze.keyword_extraction import KeywordExtractor
 from database import mysql_pool
 from database import mysql_config
 

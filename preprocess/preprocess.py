@@ -4,12 +4,16 @@ import os
 import sys
 import codecs
 import json
+import traceback
+import logging
 
 from preprocess_settings import *
+from news_preprocess_handler import NewsPreprocessHandler
 from preprocess_pipeline import GubaPipeline
 from preprocess_pipeline import NewsDBInsertionPipeline
 from preprocess_pipeline import GubaDBInsertionPipeline
-from utils import threadpool
+from utils.threadpool import Handler, ThreadPool
+from utils.universe_settings import *
 from database import mysql_pool, mysql_config
 
 try:
@@ -19,7 +23,7 @@ except:
     pass
 
 
-class GubaListPreprocessHandler(threadpool.Handler):
+class GubaListPreprocessHandler(Handler):
 
     def __init__(self, news_website):
         self.__news_website = news_website
@@ -44,7 +48,7 @@ class GubaListPreprocessHandler(threadpool.Handler):
         pass
 
 
-class GubaPreprocessHandler(threadpool.Handler):
+class GubaPreprocessHandler(Handler):
 
     def __init__(self, guba_website):
         self.__guba_website = guba_website
@@ -77,43 +81,47 @@ class GubaPreprocessHandler(threadpool.Handler):
 class Preprocess(object):
 
     def __init__(self):
+        logging.basicConfig(level=logging.DEBUG)
+        self.logger = logging.getLogger(__name__)
         pass
 
-    def generate_preprocess_handler(self, preprocess_type):
-        return CRAWLER_TYPE_HANDLER_DICT[preprocess_type]()
+    def generate_preprocess_handler(self, preprocess_type, website_name):
+        cls = globals()[CRAWLER_TYPE_HANDLER_DICT[preprocess_type]]
+        return cls(website_name)
 
-    def open_crawler_file(self, preprocess_type):
-        return odecs.open(CRAWL_FILE_NAMES[crawler_type], 'r', 'utf-8',
-                          errors='ignore')
+    def open_crawler_file(self, preprocess_type, website_name):
+        return codecs.open(CRAWL_FILE_NAMES[preprocess_type][website_name],
+                           'r', 'utf-8', errors='ignore')
         pass
 
     def preprocess_basic_info(self, preprocess_type):
         pass
 
-    def preprocess_crawler_results(self, preprocess_type):
+    def preprocess_crawler_results(self, preprocess_type, website_name):
         ''' 对新闻数据进行预处理，主要是清洗然后插入数据库 '''
-        pool = threadpool.ThreadPool(PIPELINE_THREAD_SIZE)
+        self.logger.debug("start process crawler results.")
+        pool = ThreadPool(PIPELINE_THREAD_SIZE)
         # 使用线程池
         for i in range(PIPELINE_THREAD_SIZE):
-            h = self.generate_preprocess_handler(preprocess_type)
+            h = self.generate_preprocess_handler(preprocess_type, website_name)
             h.init_handler()
             pool.add_handler(h)
         pool.startAll()
-        # open wrong output log
-        wrong_output = codecs.open(
-            WRONG_PREPROCESS_OUTPUT, 'w', 'utf-8', errors='ignore')
         # 打开新闻爬虫文件
-        for line in self.open_crawler_file(preprocess_type):
+        f = self.open_crawler_file(preprocess_type, website_name)
+        if f is None:
+            return
+        self.logger.debug("start read data from file.")
+        for line in f:
             try:
                 line = line.strip().replace(u'\xa0', u' ')
                 data_item = json.loads(line)
                 if data_item is not None:
                     pool.add_process_data(data_item)
             except:
-                # traceback.print_exc()
-                wrong_output.write(line + '\n')
+                traceback.print_exc()
                 continue
-        sys.stderr.write("Read crawler file completed.\n")
+        self.logger.debug("read data completed.")
         pool.wait_completion()
         pass
 
@@ -218,10 +226,6 @@ def preprocess_guba_info(guba_website):
 
 
 if __name__ == '__main__':
-    # preprocess_guba_info(u"guba")
-    # preprocess_given_keywords()
-    # preprocess_news_info(u'eastmoney')
-    # preprocess_guba(u"guba")
-    # preprocess_news(u"eastmoney")
-    preprocess_guba_list(u"guba_list")
+    process = Preprocess()
+    process.preprocess_crawler_results(TYPE_NEWS, WEBSITE_EASTMONEY)
     pass
