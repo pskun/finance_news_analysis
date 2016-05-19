@@ -91,7 +91,6 @@ ENV/
 *.pdf
 *.rar
 *.json
-*.txt
 *.count
 *.exe
 job_info

@@ -101,6 +101,13 @@ class MySQLConnection(object):
         return result
     # End def select
 
+    def selectOne(self, table, where=None, *args, **kwargs):
+        result = self.select(table, where=None, args, kwargs)
+        if result is not None and len(result) > 0:
+            return result[0]
+        else:
+            return None
+
     def update(self, table, where=None, *args, **kwargs):
         query = "UPDATE %s SET " % table
         keys = kwargs.keys()

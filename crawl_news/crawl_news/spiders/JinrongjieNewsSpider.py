@@ -20,10 +20,12 @@ class JinrongjieNewsSpider(CrawlSpider):
 
     def start_requests(self):
         crawl_years = range(2007, 2017)
-        base_url = "http://stock.jrj.com.cn/xwk/%d.shtml"
-        for year in crawl_years:
-            url = base_url % year
-            yield Request(url, callback=self.parse_year_list)
+        sections = ['stock', 'finance']
+        base_url = "http://%s.jrj.com.cn/xwk/%d.shtml"
+        for section in sections:
+            for year in crawl_years:
+                url = base_url % (section, year)
+                yield Request(url, callback=self.parse_year_list)
 
     '''
     def start_requests(self):
