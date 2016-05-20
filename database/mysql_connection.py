@@ -25,8 +25,9 @@ class MySQLConnection(object):
         pass
 
     def execute(self, sql):
-        self.__conn.execute(sql)
-        pass
+        self.__session.execute(sql)
+        ret = self.__session.fetchall()
+        return ret
 
     def beginTransaction(self):
         """
@@ -67,7 +68,7 @@ class MySQLConnection(object):
             keys = args
             query += "(" + ",".join(["`%s`"] * len(keys)) % keys + ")"
             query += " VALUES(" + ",".join(["%s"] * len(keys)) + ")"
-        print query
+        # print query
         self.__session.executemany(query, values_list)
         pass
 
@@ -97,9 +98,11 @@ class MySQLConnection(object):
             result = [item for item in self.__session.fetchall()]
         else:
             result = [item.values()[0] for item in self.__session.fetchall()]
-            print result
-        if not fetchall and result is not None:
-            result = result[0]
+        if len(result) == 0:
+            result = None
+        else:
+            if not fetchall:
+                result = result[0]
         return result
     # End def select
 

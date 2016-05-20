@@ -2,23 +2,27 @@
 
 import psutil
 import sys
+import time
 import traceback
 from Queue import Queue
 from threading import Thread
 
 
 class Handler(object):
-
+    ''' 每一个线程将调用一个Handler类 '''
     def __init__(self):
         pass
 
     def init_handler(self):
+        ''' 回调函数: 线程启动后立马调用该方法 '''
         pass
 
     def process_function(self, data_item):
+        ''' 回调函数: 从任务队列中取出一个数据进行处理 '''
         pass
 
     def clear_handler(self):
+        ''' 回调函数: 线程结束前调用 '''
         pass
 
 
@@ -28,7 +32,6 @@ class Worker(Thread):
     def __init__(self, handler, queue=None):
         Thread.__init__(self)
         self.__queue = queue
-        self.__handler = None
         self.__daemon = True
         self.__handler = handler
 
@@ -42,11 +45,12 @@ class Worker(Thread):
         pass
 
     def worker_done(self):
-        """线程即将退出前调用"""
+        """ 线程即将退出前调用 """
         self.__handler.clear_handler()
         pass
 
     def run(self):
+        self.__handler.init_handler()
         while True:
             try:
                 data = self.__queue.get()
@@ -57,6 +61,7 @@ class Worker(Thread):
             self.__queue.task_done()
             pass
         self.worker_done()
+        self.__handler.clear_handler()
         pass
 
 
@@ -72,8 +77,10 @@ class ThreadPool(object):
         pass
 
     def add_process_data(self, data):
-        """Add a task to the queue"""
+        ''' 向队列中添加任务数据 '''
         self.__queue.put(data)
+        # 如果生产者一直向队列中push数据，内存可能对撑爆
+        # 所以需要wait，等待消费者把数据处理一部分再push
         self.__push_count += 1
         if self.__push_count >= 15000:
             mem = psutil.virtual_memory()
@@ -83,7 +90,7 @@ class ThreadPool(object):
         pass
 
     def wait_completion(self):
-        """Wait for completion of all the tasks in the queue"""
+        """ 等待数据处理完成 """
         self.__queue.join()
         pass
 

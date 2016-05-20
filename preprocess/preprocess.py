@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import os
-import sys
 import codecs
 import json
 import traceback
@@ -9,73 +7,10 @@ import logging
 
 from preprocess_settings import *
 from news_preprocess_handler import NewsPreprocessHandler
-from preprocess_pipeline import GubaPipeline
-from preprocess_pipeline import NewsDBInsertionPipeline
-from preprocess_pipeline import GubaDBInsertionPipeline
-from utils.threadpool import Handler, ThreadPool
+from guba_list_preprocess_handler import GubaListPreprocessHandler
+from utils.threadpool import ThreadPool
 from utils.universe_settings import *
 from database import mysql_pool, mysql_config
-
-try:
-    reload(sys)
-    sys.setdefaultencoding('utf-8')
-except:
-    pass
-
-
-class GubaListPreprocessHandler(Handler):
-
-    def __init__(self, news_website):
-        self.__news_website = news_website
-        self.__dbPipe = GubaDBInsertionPipeline(self.__news_website)
-
-    def init_handler(self):
-        self.__dbPipe.before_process()
-        pass
-
-    def process_function(self, data_item):
-        try:
-            data_item = self.__dbPipe.process_item(data_item)
-        except KeyboardInterrupt:
-            try:
-                sys.exit(0)
-            except SystemExit:
-                os._exit(0)
-        pass
-
-    def clear_handler(self):
-        self.__dbPipe.after_process()
-        pass
-
-
-class GubaPreprocessHandler(Handler):
-
-    def __init__(self, guba_website):
-        self.__guba_website = guba_website
-        self.__gubaPipe = GubaPipeline(self.__guba_website)
-        self.__dbPipe = NewsDBInsertionPipeline(self.__guba_website)
-
-    def init_handler(self):
-        self.__gubaPipe.before_process()
-        self.__dbPipe.before_process()
-        pass
-
-    def process_function(self, data_item):
-        try:
-            if data_item is not None:
-                data_item = self.__gubaPipe.process_item(data_item)
-            if data_item is not None:
-                data_item = self.__dbPipe.process_item(data_item)
-        except KeyboardInterrupt:
-            try:
-                sys.exit(0)
-            except SystemExit:
-                os._exit(0)
-        pass
-
-    def clear_handler(self):
-        self.__dbPipe.after_process()
-        pass
 
 
 class Preprocess(object):
@@ -86,15 +21,14 @@ class Preprocess(object):
         pass
 
     def generate_preprocess_handler(self, preprocess_type, website_name):
+        ''' 使用反射机制动态生成相应处理类 '''
         cls = globals()[CRAWLER_TYPE_HANDLER_DICT[preprocess_type]]
         return cls(website_name)
 
     def open_crawler_file(self, preprocess_type, website_name):
+        ''' 打开相应的爬虫数据文件 '''
         return codecs.open(CRAWL_FILE_NAMES[preprocess_type][website_name],
                            'r', 'utf-8', errors='ignore')
-        pass
-
-    def preprocess_basic_info(self, preprocess_type):
         pass
 
     def preprocess_crawler_results(self, preprocess_type, website_name):
@@ -104,7 +38,6 @@ class Preprocess(object):
         # 使用线程池
         for i in range(PIPELINE_THREAD_SIZE):
             h = self.generate_preprocess_handler(preprocess_type, website_name)
-            h.init_handler()
             pool.add_handler(h)
         pool.startAll()
         # 打开新闻爬虫文件
@@ -147,81 +80,6 @@ def preprocess_given_keywords():
                 keywords_type=0,
                 keywords_property_id=kwfiles_id[kwfiles_key])
     conn.close()
-    pass
-
-
-def preprocess_news_info(news_website):
-    ''' 向数据库中插入新闻的基本信息 '''
-    # get connection
-    conn = mysql_pool.MySQLPool.getSingleConnection()
-    web_id = conn.insertOne(
-        mysql_config.DATABASE_TABLES['TABLE_WEB_LIST'],
-        web_name=news_website,
-        web_address=CRAWL_WEBSITES[news_website])
-    file_id = conn.insertOne(
-        mysql_config.DATABASE_TABLES['TABLE_NEWS_FILE_LIST'],
-        web_id=web_id,
-        file_storage_location=CRAWL_FILE_NAMES[news_website],
-        file_name=CRAWL_FILE_NAMES[news_website].split('\\')[-1])
-    # 插入版面信息
-    sections = {}
-    for line in codecs.open(
-            CRAWL_FILE_NAMES[news_website], 'r', 'utf-8',
-            errors='ignore'):
-        try:
-            line = line.strip().replace(u'\xa0', u' ')
-            data_item = json.loads(line)
-            if data_item is not None:
-                section = data_item.get('b_section')
-                sub_section = data_item.get('c_sub_section')
-                if section is None or sub_section is None:
-                    continue
-                if section not in sections:
-                    sections[section] = set()
-                sections[section].add(sub_section)
-        except:
-            # traceback.print_exc()
-            # print line
-            continue
-    for section in sections:
-        section_id = conn.insertOne(
-            mysql_config.DATABASE_TABLES['TABLE_PAGE_LIST'],
-            web_id=web_id,
-            page_name=section,
-            page_level="1")
-        for sub_section in sections[section]:
-            conn.insertOne(mysql_config.DATABASE_TABLES['TABLE_PAGE_LIST'],
-                           web_id=web_id,
-                           page_name=sub_section,
-                           page_level="2",
-                           parent_page_id=section_id)
-            pass
-        pass
-    conn.close()
-    return web_id, file_id
-    pass
-
-
-def preprocess_guba_info(guba_website):
-    ''' 向数据库中插入股吧的基本信息 '''
-    # get connection
-    conn = mysql_pool.MySQLPool.getSingleConnection()
-    web_id = conn.insertOne(
-        mysql_config.DATABASE_TABLES['TABLE_WEB_LIST'],
-        web_name=guba_website,
-        web_address=CRAWL_WEBSITES[guba_website])
-    file_id = conn.insertOne(
-        mysql_config.DATABASE_TABLES['TABLE_NEWS_FILE_LIST'],
-        web_id=web_id,
-        file_storage_location=CRAWL_FILE_NAMES[guba_website],
-        file_name=CRAWL_FILE_NAMES[guba_website].split('\\')[-1])
-    # 插入版面信息
-    conn.insertOne(mysql_config.DATABASE_TABLES['TABLE_PAGE_LIST'],
-                   web_id=web_id,
-                   page_name=u"股吧",
-                   page_level="1")
-    conn.close()
-    return web_id, file_id
     pass
 
 

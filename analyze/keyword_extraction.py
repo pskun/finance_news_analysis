@@ -22,19 +22,20 @@ class KeywordExtractor(object):
         if words_list is None and given_words_list is not None:
             words_list = given_words_list
         for word in words_list:
-            # word = word.encode('utf-8')
+            word = word.encode('utf-8')
             given_words_index.enter(word)
         given_words_index.fix()
         self.given_words_indexs[keyword_type] = given_words_index
         pass
 
     def extractGivenKeywords(self, doc_str):
+        doc_str = doc_str.encode('utf-8')
         all_type_keywords = {}
         for keyword_type in self.given_words_indexs:
             keywords = {}
             given_words_index = self.given_words_indexs[keyword_type]
             for word in given_words_index.query(doc_str):
-                word = word[1]
+                word = word[1].decode('utf-8')
                 if word not in keywords:
                     keywords[word] = 1
                 else:

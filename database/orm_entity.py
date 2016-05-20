@@ -31,6 +31,16 @@ class StorageFile(object):
 
 class Guba(object):
     ''' 股吧ORM的基类 '''
+    __tablename__ = 'eastmoney_guba_list'
+    tiezi_id = Column(String(255), primary_key=True),
+    tiezi_title = Column(Unicode(256)),
+    publish_time = Column(DateTime),
+    click_amount = Column(Integer),
+    comment_amount = Column(Integer),
+    content = Column(Unicode(10240)),
+    sec_number = Column(Unicode(8)),
+    url = Column(Unicode(100)),
+    poster = Column(Unicode(30))
     pass
 
 
@@ -78,10 +88,43 @@ page_table = Table(
     Column('parent_page_id', Integer)
 )
 
+''' 股吧建表语句
+    create table eastmoney_guba_list (
+        guba_id varchar(255) not null comment'唯一ID,web_name+ID拼接',
+        guba_title varchar(255) comment'标题',
+        publish_time datetime not null comment'发布时间，用来做分区，要求非空',
+        click_amount int comment'点击数量',
+        comment_amount int comment'评论数量',
+        abstract mediumtext comment'摘要',
+        poster varchar(45) comment'作者',
+        news_file_id int comment'文件ID',
+        web_id int comment'网站ID',
+        page_id int comment'页面ID',
+        sec_number varchar(8) comment'股票代码'
+        primary key(guba_id,publish_time)
+    ) ENGINE=MyISAM default charset=utf8
+    partition by range (year(publish_time)) (
+        partition p2007 values less than (2008),
+        partition p2008 values less than (2009),
+        partition p2009 values less than (2010),
+        partition p2010 values less than (2011),
+        partition p2011 values less than (2012),
+        partition p2012 values less than (2013),
+        partition p2013 values less than (2014),
+        partition p2014 values less than (2015),
+        partition p2015 values less than (2016),
+        partition p2016 values less than (2017)
+    );
+    --在时间字段上创建索引
+    create index i_eastmoney_guba_pubtime on eastmoney_guba_list(publish_time);
+    create index i_eastmoney_guba_sec on eastmoney_guba_list(sec_number);
+    create fulltest index i_eastmoney_guba_title on eastmoney_guba_list(guba_title);
+    create fulltest index i_eastmoney_guba_abstract on eastmoney_guba_list(abstract );
+'''
 # 股吧Mysql表
 guba_table = Table(
     'guba_list', metadata,
-    Column('tiezi_id', Integer, primary_key=True),
+    Column('tiezi_id', String(255), primary_key=True),
     Column('tiezi_title', Unicode(256)),
     Column('publish_time', DateTime),
     Column('click_amount', Integer),
@@ -164,7 +207,6 @@ news_sec_table = Table(
 )
 
 # 把表映射到类
-mapper(Guba, guba_table)
 mapper(News, news_table)
 mapper(Page, page_table)
 mapper(Subject, subject_table)
@@ -174,6 +216,7 @@ def main():
     mysql = SqlAlchemyPool()
     conn = mysql.getConnection()
     web = Website()
+    web.web_name = 'eastmoney'
     result = conn.query(web)
     print result
     pass

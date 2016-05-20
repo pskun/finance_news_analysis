@@ -17,7 +17,7 @@ GIVEN_KEYWORD_DIR = os.path.join(PRE_DATA_DIR, 'given_keywords')
 # 数据预处理文件的路径
 CRAWL_FILE_NAMES = {
     TYPE_NEWS: {
-        WEBSITE_EASTMONEY: r'EastMoneyNewsSpider-bak.json',
+        WEBSITE_EASTMONEY: r'EastMoneyNewsSpider.json',
     },
     TYPE_GUBA: {
         WEBSITE_EASTMONEY: r'EastMoneyGubaSpider.json',
@@ -28,7 +28,8 @@ CRAWL_FILE_NAMES = {
 }
 for precess_type in CRAWL_FILE_NAMES:
     for website in CRAWL_FILE_NAMES[precess_type]:
-        CRAWL_FILE_NAMES[precess_type][website] = os.path.join(DATA_DIR, CRAWL_FILE_NAMES[precess_type][website])
+        CRAWL_FILE_NAMES[precess_type][website] = os.path.join(
+            DATA_DIR, CRAWL_FILE_NAMES[precess_type][website])
 
 CRAWL_WEBSITES = {
     WEBSITE_EASTMONEY: r'http://www.eastmoney.com/',
