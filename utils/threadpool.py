@@ -85,7 +85,7 @@ class ThreadPool(object):
         if self.__push_count >= 15000:
             mem = psutil.virtual_memory()
             if float(mem.used) / float(mem.total) > 0.80:
-                time.sleep(8)
+                time.sleep(10)
             self.__push_count = 0
         pass
 

@@ -10,7 +10,7 @@ from database.mysql_pool import MySQLPool
 from database import mysql_config
 
 
-class GubaListPreprocessHandler(Handler):
+class GubaPreprocessHandler(Handler):
 
     def __init__(self, website_name):
         self.website_name = website_name
@@ -18,6 +18,7 @@ class GubaListPreprocessHandler(Handler):
         self.tiezi_tuple_list = []
         self.bat_insert_num = 1000
         self.guba_id_counter = 1
+        self.guba_table_name = mysql_config.TABLE_GUBA % website_name
 
     def init_handler(self):
         ''' 初始化handler '''
@@ -48,7 +49,7 @@ class GubaListPreprocessHandler(Handler):
     def clear_handler(self):
         if len(self.__tiezi_tuple_list) > 0:
             self.db_session.insertMany(
-                mysql_config.TABLE_GUBA,
+                self.guba_table_name,
                 self.tiezi_tuple_list,
                 "title", "publish_time",
                 "click_amount", "comment_amount",
@@ -63,6 +64,8 @@ class GubaListPreprocessHandler(Handler):
 
     def parse_post_time(self, post_time):
         post_time = post_time + " 00:00"
+        # TODO 这里需要检查post time是不是有效的
+        # 错误的post time对应的item应该保存下来
         return post_time
 
     def insert_into_db(self, db_id, ticker_id, tiezi_item):
@@ -87,7 +90,7 @@ class GubaListPreprocessHandler(Handler):
         self.tiezi_tuple_list.append(tiezi_tuple)
         if len(self.tiezi_tuple_list) >= self.bat_insert_num:
             self.__db_connection.insertMany(
-                mysql_config.TABLE_GUBA,
+                self.guba_table_name,
                 self.tiezi_tuple_list,
                 "tiezi_title", "publish_time",
                 "click_amount", "comment_amount",

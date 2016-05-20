@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from scrapy.linkextractors import LinkExtractor
-from scrapy.spiders import CrawlSpider, Rule
+from scrapy.spiders import CrawlSpider
 
 from ..items import GubaItem
 
@@ -9,31 +8,14 @@ from ..items import GubaItem
 class EastmoneyGubaSpider(CrawlSpider):
     name = 'EastMoneyGubaSpider'
     allowed_domains = ['guba.eastmoney.com']
-    start_urls = [
-        'http://guba.eastmoney.com/list,600115.html',
-    ]
 
-    rules = (
-        Rule(
-            LinkExtractor(allow=r'.*\/news,[0-9]+,[0-9]+.*', deny=r'.*iguba.*'),
-            callback='parse_item', follow=True),
-        Rule(LinkExtractor(allow=r'.*guba.*', deny=r'.*iguba.*'), follow=True),
-    )
-
-    def __init__(self):
-        pass
-
-    def __del__(self):
+    def start_requests(self):
+        # 从文件中读取url
         pass
 
     # def parse(self, response):
     def parse_item(self, response):
         item = GubaItem()
-
-        if response.status != 200:
-            item['status'] = response.status
-            item['url'] = response.url
-            return item
 
         url = response.url
         title = response.xpath('//div[@id="zwconttbt"]/text()').extract()
