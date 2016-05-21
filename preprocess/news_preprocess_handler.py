@@ -14,12 +14,13 @@ from database import common_db_func
 
 class NewsPreprocessHandler(Handler):
 
-    def __init__(self, website_name):
+    def __init__(self, id_generator, website_name=None):
         self.website_name = website_name
+        self.id_generator = id_generator
         self.keyword_extractor = KeywordExtractor()
         self.db_session = None
         # 数据库批量插入的列表缓存
-        self.bat_insert_num = 1
+        self.bat_insert_num = 800
         self.news_tuple_list = []
         self.news_tickers_tuple_list = []
         self.news_keywords_tuple_list = []
@@ -30,10 +31,20 @@ class NewsPreprocessHandler(Handler):
         self.sub_section_ids = {}
         self.keyword_property = {}
         self.keywords = {}
-        self.news_id_counter = 1
         # 日志
         logging.basicConfig(level=logging.DEBUG)
         self.logger = logging.getLogger(__name__)
+
+    def before_thread_start(self):
+        ''' 回调函数: 线程启动前调用 '''
+        # 初始化数据库连接
+        self.db_session = MySQLPool().getConnection()
+        # 获取新闻表的行数
+        news_id_counter = common_db_func.query_table_count(
+            self.db_session, mysql_config.TABLE_NEWS) + 1
+        # 设置id的初始值
+        self.id_generator.set_initial_counter(news_id_counter)
+        pass
 
     def init_handler(self):
         ''' 初始化handler的回调函数 '''
@@ -42,12 +53,6 @@ class NewsPreprocessHandler(Handler):
             kfile = os.path.join(
                 GIVEN_KEYWORD_DIR, GIVEN_KEYWORD_FILES[keyword_type])
             self.keyword_extractor.initGivenKeywords(keyword_type, kfile)
-        # 初始化数据库连接
-        self.db_session = MySQLPool().getConnection()
-        # 获取新闻表的行数
-        self.news_id_counter = common_db_func.query_table_count(
-            self.db_session, mysql_config.TABLE_NEWS) + 1
-        print self.news_id_counter
         # 从数据库中查询基本的新闻信息
         self.process_basic_info()
         pass
@@ -58,7 +63,6 @@ class NewsPreprocessHandler(Handler):
                 data_item = self.filter_news(data_item)
             if data_item is not None:
                 data_item = self.insert_into_db(data_item)
-            self.news_id_counter += 1
         except KeyboardInterrupt:
             try:
                 sys.exit(0)
@@ -87,20 +91,21 @@ class NewsPreprocessHandler(Handler):
 
     def process_basic_info(self):
         # 网站id
-        self.web_id = common_db_func.query_web_id(
-            self.db_session, self.website_name)
-        if self.web_id is None:
-            # 判断这是新加入的网站
-            self.logger.debug('Cannot find web id, may be a new website.')
-            # 插入新网站名称
-            self.web_id = common_db_func.insert_new_website(
-                self.db_session, self.website_name,
-                CRAWL_WEBSITES[self.website_name])
-            return
+        # 插入新网站名称
+        self.web_id = common_db_func.insert_new_website(
+            self.db_session, self.website_name,
+            CRAWL_WEBSITES[self.website_name])
+        if self.web_id == 0:
+            self.web_id = common_db_func.query_web_id(
+                self.db_session, self.website_name)
         # 新闻文件id
         file = CRAWL_FILE_NAMES[TYPE_NEWS][self.website_name]
+        # 插入新文件的文件名
         self.news_file_id = common_db_func.insert_new_filename(
             self.db_session, self.web_id, file)
+        if self.news_file_id == 0:
+            self.news_file_id = common_db_func.query_file_id(
+                self.db_session, file)
         # 板块id
         result = self.db_session.select(
             mysql_config.TABLE_PAGE, None, True,
@@ -183,17 +188,21 @@ class NewsPreprocessHandler(Handler):
             u"年", "-").replace(u"月", "-").replace(u"日", "")
         return post_time
 
-    def generate_news_db_id(self):
-        ''' 生成插入数据库中的新闻id
-            当前规则: "news" + counter
-        '''
-        return "news" + str(self.news_id_counter)
-
     def insert_section_info(self, section_name, level, parent_section=None):
         ''' 插入版面数据 '''
-        page_id = self.db_session.insertOne(
-            mysql_config.TABLE_PAGE,
-            page_name=section_name, page_level=level)
+        page_id = 0
+        if parent_section is None:
+            page_id = self.db_session.insertOne(
+                mysql_config.TABLE_PAGE,
+                page_name=section_name, page_level=level)
+        else:
+            page_id = self.db_session.insertOne(
+                mysql_config.TABLE_PAGE,
+                page_name=section_name, page_level=level,
+                parent_page_id=parent_section)
+        if page_id == 0:
+            page_id = common_db_func.query_page_id(
+                self.db_session, level, section_name)
         return page_id
 
     def insert_news_info(self, news_id, data):
@@ -286,7 +295,7 @@ class NewsPreprocessHandler(Handler):
 
     def insert_into_db(self, data):
         try:
-            news_id = self.generate_news_db_id()
+            news_id = self.id_generator.generate_news_id()
             # 插入新闻至news_list中
             self.insert_news_info(news_id, data)
             # 新闻提取的关键字插入至rel_news_keywords中

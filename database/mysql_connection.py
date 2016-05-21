@@ -48,7 +48,7 @@ class MySQLConnection(object):
 
     def insertOne(self, table, *args, **kwargs):
         values = None
-        query = "INSERT INTO %s " % table
+        query = "INSERT IGNORE INTO %s " % table
         if kwargs:
             keys = tuple(kwargs.keys())
             values = tuple(kwargs.values())

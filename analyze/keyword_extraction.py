@@ -67,7 +67,7 @@ class KeywordExtractor(object):
         pass
 
 
-def main(): 
+def main():
     pass
 
 

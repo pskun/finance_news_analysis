@@ -32,6 +32,12 @@ def insert_new_website(db_session, website_name, web_address):
 
 def query_file_id(db_session, filename):
     ''' 通过文件名查找文件id '''
+    file_id = db_session.select(
+        mysql_config.TABLE_NEWS_FILE,
+        "file_name=\"%s\"" % filename,
+        False,
+        "news_file_id")
+    return file_id
     pass
 
 
@@ -43,3 +49,13 @@ def insert_new_filename(db_session, web_id, filename):
         file_storage_location=filename,
         file_name=filename.split('\\')[-1])
     return news_file_id
+
+
+def query_page_id(db_session, page_level, page_name):
+    ''' 通过板块级数和板块名称查找板块id '''
+    page_id = db_session.select(
+        mysql_config.TABLE_PAGE,
+        "page_name=\"%s\" and page_level=%d" % (page_name, page_level),
+        False,
+        "page_id")
+    return page_id

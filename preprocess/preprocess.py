@@ -2,12 +2,14 @@
 
 import codecs
 import json
+import threading
 import traceback
 import logging
 
 from preprocess_settings import *
+from identity_generator import IdentityGenerator
 from news_preprocess_handler import NewsPreprocessHandler
-from guba_list_preprocess_handler import GubaListPreprocessHandler
+from guba_preprocess_handler import GubaPreprocessHandler
 from utils.threadpool import ThreadPool
 from utils.universe_settings import *
 from database import mysql_pool, mysql_config
@@ -15,15 +17,18 @@ from database import mysql_pool, mysql_config
 
 class Preprocess(object):
 
-    def __init__(self):
+    def __init__(self, thread_size=1):
+        self.thread_size = thread_size
         logging.basicConfig(level=logging.DEBUG)
         self.logger = logging.getLogger(__name__)
+        self.mutex = threading.Lock()
+        self.id_generator = IdentityGenerator(mutex=self.mutex)
         pass
 
     def generate_preprocess_handler(self, preprocess_type, website_name):
         ''' 使用反射机制动态生成相应处理类 '''
         cls = globals()[CRAWLER_TYPE_HANDLER_DICT[preprocess_type]]
-        return cls(website_name)
+        return cls(self.id_generator, website_name)
 
     def open_crawler_file(self, preprocess_type, website_name):
         ''' 打开相应的爬虫数据文件 '''
@@ -34,9 +39,9 @@ class Preprocess(object):
     def preprocess_crawler_results(self, preprocess_type, website_name):
         ''' 对新闻数据进行预处理，主要是清洗然后插入数据库 '''
         self.logger.debug("start process crawler results.")
-        pool = ThreadPool(PIPELINE_THREAD_SIZE)
+        pool = ThreadPool(self.thread_size)
         # 使用线程池
-        for i in range(PIPELINE_THREAD_SIZE):
+        for i in range(self.thread_size):
             h = self.generate_preprocess_handler(preprocess_type, website_name)
             pool.add_handler(h)
         pool.startAll()
@@ -84,6 +89,6 @@ def preprocess_given_keywords():
 
 
 if __name__ == '__main__':
-    process = Preprocess()
+    process = Preprocess(thread_size=2)
     process.preprocess_crawler_results(TYPE_NEWS, WEBSITE_EASTMONEY)
     pass

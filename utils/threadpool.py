@@ -13,6 +13,10 @@ class Handler(object):
     def __init__(self):
         pass
 
+    def before_thread_start(self):
+        ''' 回调函数: 线程启动前调用 '''
+        pass
+
     def init_handler(self):
         ''' 回调函数: 线程启动后立马调用该方法 '''
         pass
@@ -40,13 +44,9 @@ class Worker(Thread):
         pass
 
     def startWorker(self):
+        self.__handler.before_thread_start()
         self.setDaemon(self.__daemon)
         self.start()
-        pass
-
-    def worker_done(self):
-        """ 线程即将退出前调用 """
-        self.__handler.clear_handler()
         pass
 
     def run(self):
@@ -60,7 +60,6 @@ class Worker(Thread):
                 sys.exit()
             self.__queue.task_done()
             pass
-        self.worker_done()
         self.__handler.clear_handler()
         pass
 

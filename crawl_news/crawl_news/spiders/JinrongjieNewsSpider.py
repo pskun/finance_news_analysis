@@ -194,7 +194,7 @@ class JinrongjieNewsSpider(CrawlSpider):
                            callback=self.parse_news_item)
         url = response.url
         title = response.xpath(
-            '//div[@class="text-col"]/h1[@class="newsLeft"]/text()').extract()
+            '//div[contains(@class,"text-col")]//h1[@class="newsLeft"]/text()').extract()
         section = response.xpath(
             '//div[@class="newsGuide"]/a[2]/text()').extract()
         sub_section = response.xpath(
