@@ -82,9 +82,12 @@ class ThreadPool(object):
         # 所以需要wait，等待消费者把数据处理一部分再push
         self.__push_count += 1
         if self.__push_count >= 15000:
-            mem = psutil.virtual_memory()
-            if float(mem.used) / float(mem.total) > 0.80:
-                time.sleep(10)
+            while True:
+                mem = psutil.virtual_memory()
+                if float(mem.used) / float(mem.total) > 0.80:
+                    time.sleep(10)
+                else:
+                    break
             self.__push_count = 0
         pass
 

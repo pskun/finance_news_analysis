@@ -7,7 +7,8 @@ from utils.universe_settings import *
 ''' 需要修改的部分 '''
 # 新增一个预处理Handler的时候需要加入
 CRAWLER_TYPE_HANDLER_DICT = {
-    TYPE_GUBALIST: 'GubaListPreprocessHandler',
+    TYPE_GUBALIST: 'GubaPreprocessHandler',
+    TYPE_GUBA: 'GubaPreprocessHandler',
     TYPE_NEWS: 'NewsPreprocessHandler',
 }
 
@@ -21,7 +22,7 @@ CRAWL_FILE_NAMES = {
         WEBSITE_EASTMONEY: r'EastMoneyGubaSpider.json',
     },
     TYPE_GUBALIST: {
-        WEBSITE_EASTMONEY: r'EastMoneyGubaListSpider-bak.json',
+        WEBSITE_EASTMONEY: r'EastMoneyGubaListSpider.json',
     },
 }
 

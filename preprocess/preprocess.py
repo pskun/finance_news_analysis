@@ -12,7 +12,8 @@ from news_preprocess_handler import NewsPreprocessHandler
 from guba_preprocess_handler import GubaPreprocessHandler
 from utils.threadpool import ThreadPool
 from utils.universe_settings import *
-from database import mysql_pool, mysql_config
+from database.mysql_pool import MySQLPool
+from database import mysql_config
 
 
 class Preprocess(object):
@@ -28,7 +29,7 @@ class Preprocess(object):
     def generate_preprocess_handler(self, preprocess_type, website_name):
         ''' 使用反射机制动态生成相应处理类 '''
         cls = globals()[CRAWLER_TYPE_HANDLER_DICT[preprocess_type]]
-        return cls(self.id_generator, website_name)
+        return cls(preprocess_type, self.id_generator, website_name)
 
     def open_crawler_file(self, preprocess_type, website_name):
         ''' 打开相应的爬虫数据文件 '''
@@ -63,28 +64,27 @@ class Preprocess(object):
         pool.wait_completion()
         pass
 
-
-def preprocess_given_keywords():
-    ''' 向数据库表中插入给定的关键字 '''
-    kwfiles_id = {}
-    conn = mysql_pool.MySQLPool.getSingleConnection()
-    # 插入关键字类型
-    for kwfiles_key in GIVEN_KEYWORD_FILES:
-        key_id = conn.insertOne(
-            mysql_config.DATABASE_TABLES['TABLE_KEYWORDS_PROPERTY'],
-            keywords_property_col=kwfiles_key)
-        kwfiles_id[kwfiles_key] = key_id  # key_id为对应主键的id
-    # 插入关键字
-    for kwfiles_key in GIVEN_KEYWORD_FILES:
-        for line in codecs.open(GIVEN_KEYWORD_FILES[kwfiles_key],
-                                'r', 'utf-8', errors='ignore'):
-            line = line.strip().replace(u'\xa0', u' ')
-            conn.insertOne(
-                mysql_config.DATABASE_TABLES['TABLE_KEYWORDS_LIST'],
-                keywords=line,
-                keywords_type=0,
-                keywords_property_id=kwfiles_id[kwfiles_key])
-    conn.close()
+    def preprocess_given_keywords(self):
+        ''' 向数据库表中插入给定的关键字 '''
+        kwfiles_id = {}
+        conn = MySQLPool().getSingleConnection()
+        # 插入关键字类型
+        for kwfiles_key in GIVEN_KEYWORD_FILES:
+            key_id = conn.insertOne(
+                mysql_config.TABLE_KEYWORDS_PROPERTY,
+                keywords_property_col=kwfiles_key)
+            kwfiles_id[kwfiles_key] = key_id  # key_id为对应主键的id
+        # 插入关键字
+        for kwfiles_key in GIVEN_KEYWORD_FILES:
+            f = codecs.open(GIVEN_KEYWORD_FILES[kwfiles_key], 'r', 'utf-8')
+            for line in f:
+                line = line.strip().replace(u'\xa0', u' ')
+                conn.insertOne(
+                    mysql_config.TABLE_KEYWORDS,
+                    keywords=line,
+                    keywords_type=0,
+                    keywords_property_id=kwfiles_id[kwfiles_key])
+        conn.close()
     pass
 
 

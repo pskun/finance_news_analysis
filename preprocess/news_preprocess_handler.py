@@ -14,7 +14,8 @@ from database import common_db_func
 
 class NewsPreprocessHandler(Handler):
 
-    def __init__(self, id_generator, website_name=None):
+    def __init__(self, preprocess_type, id_generator=None, website_name=None):
+        self.preprocess_type = preprocess_type
         self.website_name = website_name
         self.id_generator = id_generator
         self.keyword_extractor = KeywordExtractor()
@@ -71,7 +72,7 @@ class NewsPreprocessHandler(Handler):
         pass
 
     def clear_handler(self):
-        if len(self.news_tuple) > 0:
+        if len(self.news_tuple_list) > 0:
             self.db_session.insertMany(
                 mysql_config.TABLE_NEWS,
                 self.news_tuple_list,
