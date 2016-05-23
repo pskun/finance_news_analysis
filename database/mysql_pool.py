@@ -86,7 +86,7 @@ class MySQLPool(object):
             charset='utf8',
             use_unicode=True,
             cursorclass=DictCursor)
-    # End def __init__
+    pass
 
     def getConnection(self):
         try:
@@ -96,5 +96,4 @@ class MySQLPool(object):
         except MySQLdb.Error as e:
             sys.stderr.write("Error %d: %s\n" % (e.args[0], e.args[1]))
             return None
-    # End def __open
-# End class
+    pass

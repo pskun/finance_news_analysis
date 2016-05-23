@@ -1,0 +1,1 @@
+scrapy crawl EastMoneyNewsSpider -L INFO -s JOBDIR=job_info/easy_money_news_job

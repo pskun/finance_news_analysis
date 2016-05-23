@@ -6,7 +6,7 @@ from datetime import datetime
 import traceback
 import logging
 
-from utils.universe_settings import TYPE_GUBALIST, TYPE_GUBA
+from universe_settings import TYPE_GUBALIST, TYPE_GUBA
 from utils.threadpool import Handler
 from database.mysql_pool import MySQLPool
 from database import mysql_config

@@ -1,3 +1,25 @@
+# 项目结构
+.
+├── analyze(文本模型)
+│   └── focus_model(关注度模型)
+├── crawler(scrapy爬虫)
+│   └── crawler
+│       └── spiders
+├── database(数据库操作)
+├── preprocess(数据预处理)
+│   └── pre_data
+│       └── given_keywords
+├── strategy(回测接口)
+├── tonglian(通联数据获取接口)
+└── utils(通用处理类)
+
+# Python库依赖
+中文分词: [jieba](https://github.com/fxsjy/jieba)
+爬虫: [scrapy](http://scrapy.org/)
+Mysql连接: [MySQLdb](http://mysql-python.sourceforge.net/MySQLdb.html)
+ORM工具: [sqlalchemy](http://www.sqlalchemy.org/)
+
+
 # 注意事项
 1. 修改PYTHONPATH
 把项目所在目录添加到PYTHONPATH中。

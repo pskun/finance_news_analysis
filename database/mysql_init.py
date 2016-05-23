@@ -29,9 +29,8 @@ def init_mysql():
 
     results = cursor.fetchall()
     for row in results:
-        sql = "ALTER TABLE `%s` \
-            convert to character set DEFAULT COLLATE DEFAULT" % (row[0])
-    cursor.execute(sql)
+        sql = "ALTER TABLE `%s` \ convert to character set DEFAULT COLLATE DEFAULT" % (row[0])
+        cursor.execute(sql)
     db.close()
     sys.stderr.write("Init Mysql encoding done.\n")
     pass

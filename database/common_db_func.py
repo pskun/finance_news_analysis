@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import os
 import mysql_config
 
 
@@ -47,7 +48,7 @@ def insert_new_filename(db_session, web_id, filename):
         mysql_config.TABLE_NEWS_FILE,
         web_id=web_id,
         file_storage_location=filename,
-        file_name=filename.split('\\')[-1])
+        file_name=os.path.split(filename)[-1])
     return news_file_id
 
 

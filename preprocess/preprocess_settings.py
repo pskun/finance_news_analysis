@@ -2,7 +2,7 @@
 
 import os
 
-from utils.universe_settings import *
+from universe_settings import *
 
 ''' 需要修改的部分 '''
 # 新增一个预处理Handler的时候需要加入

@@ -11,7 +11,7 @@ from identity_generator import IdentityGenerator
 from news_preprocess_handler import NewsPreprocessHandler
 from guba_preprocess_handler import GubaPreprocessHandler
 from utils.threadpool import ThreadPool
-from utils.universe_settings import *
+from universe_settings import *
 from database.mysql_pool import MySQLPool
 from database import mysql_config
 

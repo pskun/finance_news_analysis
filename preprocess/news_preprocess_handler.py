@@ -5,7 +5,7 @@ import logging
 
 from preprocess_settings import *
 from utils.threadpool import Handler
-from utils.universe_settings import *
+from universe_settings import *
 from analyze.keyword_extraction import KeywordExtractor
 from database.mysql_pool import MySQLPool
 from database import mysql_config
