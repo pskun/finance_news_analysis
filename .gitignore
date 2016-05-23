@@ -94,5 +94,4 @@ ENV/
 *.count
 *.exe
 job_info
-output
 strategy/data
