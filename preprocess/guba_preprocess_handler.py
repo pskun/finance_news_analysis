@@ -7,6 +7,7 @@ import traceback
 import logging
 
 from universe_settings import TYPE_GUBALIST, TYPE_GUBA
+from data.data_settings import *
 from utils.threadpool import Handler
 from database.mysql_pool import MySQLPool
 from database import mysql_config

@@ -1,10 +1,11 @@
 # encoding=utf-8
 
-import sys
 import codecs
 import math
 import word_segment
 import json
+from universe_settings import *
+from data.data_settings import *
 from analyze_settings import *
 
 
@@ -62,7 +63,7 @@ class TFIDFTransformer(object):
 
 
 def processIDF():
-    doc_file = CRAWL_FILE_NAMES['eastmoney']
+    doc_file = CRAWL_FILE_NAMES[TYPE_NEWS][WEBSITE_EASTMONEY]
     idf_file = IDF_FILE
     file = codecs.open(doc_file, 'r', 'utf-8')
     tfidf = TFIDFTransformer()
@@ -84,7 +85,4 @@ def processIDF():
 
 
 if __name__ == '__main__':
-    if __name__ == '__main__':
-        os.chdir(BASE_DIR)
-        sys.path.append(os.path.abspath(BASE_DIR))
     processIDF()

@@ -1,5 +1,5 @@
 # 项目结构
-.
+.  
 ├── analyze(文本模型)  
 │   └── focus_model(关注度模型)  
 ├── crawler(scrapy爬虫)  
@@ -21,6 +21,7 @@ Mysql连接: [MySQLdb](http://mysql-python.sourceforge.net/MySQLdb.html)
 ORM工具: [sqlalchemy](http://www.sqlalchemy.org/)  
 AC自动机: [esmre](https://github.com/wharris/esmre)  
 布隆过滤器: [pybloom](https://github.com/jaybaird/python-bloomfilter)  
+机器学习: [scikit-learn](http://scikit-learn.org/)
 
 # 注意事项
 1. 修改PYTHONPATH  

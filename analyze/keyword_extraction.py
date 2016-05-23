@@ -7,6 +7,7 @@ import esm
 
 
 class KeywordExtractor(object):
+
     def __init__(self):
         self.given_words_indexs = {}
         self.words_idf = None
@@ -14,6 +15,9 @@ class KeywordExtractor(object):
 
     def initGivenKeywords(
             self, keyword_type, filename=r'', given_words_list=None):
+        ''' 初始给定的关键词
+            可以初始多个文件
+        '''
         given_words_index = esm.Index()
         words_list = None
         if len(filename) > 0:
@@ -29,6 +33,9 @@ class KeywordExtractor(object):
         pass
 
     def extractGivenKeywords(self, doc_str):
+        ''' 从一个字符串中抽取给定的关键词
+            给定关键词需要预先初始化
+        '''
         doc_str = doc_str.encode('utf-8')
         all_type_keywords = {}
         for keyword_type in self.given_words_indexs:
@@ -45,6 +52,7 @@ class KeywordExtractor(object):
         pass
 
     def extarctTextRankKeywords(self, doc_str, window=5):
+        ''' 使用TextRank算法提取关键词 '''
         keywords = jieba.analyse.textrank(doc_str, withWeight=True)
         return keywords
         pass

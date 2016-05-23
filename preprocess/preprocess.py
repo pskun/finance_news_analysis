@@ -7,6 +7,7 @@ import traceback
 import logging
 
 from preprocess_settings import *
+from data.data_settings import *
 from identity_generator import IdentityGenerator
 from news_preprocess_handler import NewsPreprocessHandler
 from guba_preprocess_handler import GubaPreprocessHandler
