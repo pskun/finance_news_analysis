@@ -26,5 +26,3 @@ DATA_DIR = os.path.join(BASE_DIR, 'data')
 PREPROCESS_DIR = os.path.join(BASE_DIR, 'preprocess')
 # 文本分析文件目录
 ANALYZE_DIR = os.path.join(BASE_DIR, 'analyze')
-
-print BASE_DIR
