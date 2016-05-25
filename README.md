@@ -1,6 +1,5 @@
 # 项目结构
 .  
-
 ├── analyze(文本模型)  
 │   └── focus_model(关注度模型)  
 ├── crawler(scrapy爬虫)  
@@ -23,6 +22,7 @@ ORM工具: [sqlalchemy](http://www.sqlalchemy.org/)
 AC自动机: [esmre](https://github.com/wharris/esmre)  
 布隆过滤器: [pybloom](https://github.com/jaybaird/python-bloomfilter)  
 机器学习: [scikit-learn](http://scikit-learn.org/)
+文本主题模型: [gensim](https://github.com/piskvorky/gensim)
 
 # 注意事项
 1. 修改PYTHONPATH  

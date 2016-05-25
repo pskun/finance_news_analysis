@@ -17,16 +17,10 @@ class EastmoneyGubaListSpider(CrawlSpider):
     name = 'EastMoneyGubaListSpider'
     allowed_domains = ['guba.eastmoney.com']
     start_urls = []
-    incremental = False
     last_date = datetime.now() - timedelta(1)
 
-    def __init__(self, incremental=False, *args, **kwargs):
-        '''
-        Args:
-            incremental: 是否增量爬取
-        '''
+    def __init__(self, *args, **kwargs):
         super(EastmoneyGubaListSpider, self).__init__(*args, **kwargs)
-        self.__class__.incremental = incremental
 
     def start_requests(self):
         base_url = 'http://guba.eastmoney.com/list,%s.html'
@@ -34,45 +28,23 @@ class EastmoneyGubaListSpider(CrawlSpider):
         for line in reader:
             ticker_id = line.strip()
             url = base_url % ticker_id
-            if self.incremental:
-                yield Request(url, self.parse_incremental, meta={'page_id': 1})
-            else:
-                yield Request(url, self.parse_index_page, meta={'page_id': 1})
+            yield Request(url, self.parse_index_page)
         pass
 
     def get_guba_post_year(self, response):
         '''
         获取帖子的发帖年份
         '''
-        # 用于增量抓取记录
-        # 如果当前获取的日期都小于等于最后更新日，就不再进行进一步抓取
-        crawl_next_page = False
-        # 当然的列表页id
-        cur_page_id = response.meta['page_id']
         # default帖子年份
-        default_year = '2016'
-        post_time = response.xpath('//div[@class="zwfbtime"]/text()').extract()
-        post_time = "".join(post_time).strip()
-        if post_time is not None and post_time != "":
-            post_time = post_time.split(" ")[1]
-            default_year = post_time.split('-')[0]
+        post_year = response.xpath(
+            '//div[@class="zwfbtime"]/text()').re("[0-9]{4}")
+        post_year = "".join(post_year).strip()
         eastmoney_guba_list_item = response.meta['item']
-        # 股票ticker
-        ticker_id = eastmoney_guba_list_item['ticker_id']
+        # 帖子内容
         tiezi_item = eastmoney_guba_list_item['tiezi_item']
         for item in tiezi_item:
-            item['a_post_time'] = default_year + '-' + item['a_post_time']
-            post_date = datetime.strptime(item['a_post_time'], '%Y-%m-%d')
-            if post_date > self.last_date:
-                crawl_next_page = True
-        if self.incremental and crawl_next_page:
-            base_url = 'http://guba.eastmoney.com/list,%s_%d.html'
-            url = base_url % (ticker_id, cur_page_id + 1)
-            yield Request(url=url,
-                          callback=self.parse_list_item,
-                          meta={'page_id': 1})
-        yield eastmoney_guba_list_item
-        pass
+            item['a_post_time'] = post_year + '-' + item['a_post_time']
+        return eastmoney_guba_list_item
 
     def parse_index_page(self, response):
         ''' 解析股吧列表第一页的信息 '''
@@ -93,14 +65,8 @@ class EastmoneyGubaListSpider(CrawlSpider):
             yield Request(url, self.parse_list_item)
         pass
 
-    def parse_incremental(self, response):
-        ''' 增量式爬取：根据上次爬取的日期，爬取上次日期之后至今日的所有股吧列表 '''
-        self.parse_list_item(response)
-        pass
-
     def parse_list_item(self, response):
         ''' 解析股吧的列表 '''
-        eastmoney_guba_list_item = GubaListItem()
 
         list_url = response.url
         ticker_name = response.xpath(
@@ -118,7 +84,7 @@ class EastmoneyGubaListSpider(CrawlSpider):
                 continue
             # 解析标题
             title = item.xpath('./span[@class="l3"]/a/@title').extract()
-            title = "".join(title)
+            title = "".join(title).strip()
             # 解析url
             url = item.xpath('./span[@class="l3"]/a/@href').extract()
             url = "".join(url)
@@ -130,11 +96,11 @@ class EastmoneyGubaListSpider(CrawlSpider):
             # 解析阅读量
             read_num = item.xpath('./span[@class="l1"]//text()').extract()
             read_num = "".join(read_num)
-            read_num = self.atoi(read_num)
+            read_num = util_func.atoi(read_num)
             # 解析评论量
             comment_num = item.xpath('./span[@class="l2"]//text()').extract()
             comment_num = "".join(comment_num)
-            comment_num = self.atoi(comment_num)
+            comment_num = util_func.atoi(comment_num)
             # 构造输出字典
             eastmoney_guba_item = dict()
             eastmoney_guba_item['url'] = url
@@ -150,17 +116,18 @@ class EastmoneyGubaListSpider(CrawlSpider):
             month = a_post_time.split('-')[0]
             if month not in month_items_dict:
                 month_items_dict[month] = []
+            month_items_dict[month].append(eastmoney_guba_item)
             if month not in month_url_dict:
                 month_url_dict[month] = url
-            month_items_dict[month].append(eastmoney_guba_item)
             pass
         # 放入scrapy item中
         for month in month_url_dict:
+            eastmoney_guba_list_item = GubaListItem()
             eastmoney_guba_list_item['tiezi_item'] = month_items_dict[month]
             eastmoney_guba_list_item['list_url'] = list_url
             eastmoney_guba_list_item['ticker_id'] = ticker_id
             eastmoney_guba_list_item['ticker_name'] = ticker_name
             yield Request(
                 url=month_url_dict[month],
-                meta={'item': eastmoney_guba_list_item, 'page_id': 1},
+                meta={'item': eastmoney_guba_list_item},
                 callback=self.get_guba_post_year)

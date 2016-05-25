@@ -11,8 +11,8 @@
 
 BOT_NAME = 'crawl_news'
 
-SPIDER_MODULES = ['crawl_news.spiders']
-NEWSPIDER_MODULE = 'crawl_news.spiders'
+SPIDER_MODULES = ['crawler.spiders']
+NEWSPIDER_MODULE = 'crawler.spiders'
 
 DOWNLOAD_HANDLERS = {
     's3': None,
@@ -107,7 +107,7 @@ COOKIES_ENABLED = False
 DOWNLOADER_MIDDLEWARES = {
     'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
     'scrapy.downloadermiddlewares.retry.RetryMiddleware': 500,
-    'crawl_news.middlewares.RandomUserAgentMiddleWare': 400,
+    'crawler.middlewares.RandomUserAgentMiddleWare': 400,
 }
 
 # Enable or disable extensions
@@ -119,7 +119,7 @@ DOWNLOADER_MIDDLEWARES = {
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    'crawl_news.pipelines.CrawlPipeline': 300,
+    'crawler.pipelines.CrawlPipeline': 300,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
