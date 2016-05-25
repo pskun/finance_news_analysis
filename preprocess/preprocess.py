@@ -6,13 +6,12 @@ import threading
 import traceback
 import logging
 
+from universe_settings import *
 from preprocess_settings import *
-from data.data_settings import *
 from identity_generator import IdentityGenerator
 from news_preprocess_handler import NewsPreprocessHandler
 from guba_preprocess_handler import GubaPreprocessHandler
 from utils.threadpool import ThreadPool
-from universe_settings import *
 from database.mysql_pool import MySQLPool
 from database import mysql_config
 

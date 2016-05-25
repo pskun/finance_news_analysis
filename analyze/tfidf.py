@@ -5,7 +5,6 @@ import math
 import word_segment
 import json
 from universe_settings import *
-from data.data_settings import *
 from analyze_settings import *
 
 
