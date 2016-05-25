@@ -1,11 +1,16 @@
 # -*- coding: utf-8 -*-
 
+import threading
+
 
 class IdentityGenerator(object):
 
     def __init__(self, initial_counter=1, mutex=None):
         self.id_counter = initial_counter
-        self.mutex = mutex
+        if mutex is not None:
+            self.mutex = mutex
+        else:
+            self.mutex = threading.Lock()
         pass
 
     def set_initial_counter(self, initial_counter):

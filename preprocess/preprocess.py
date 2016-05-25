@@ -2,7 +2,6 @@
 
 import codecs
 import json
-import threading
 import traceback
 import logging
 
@@ -22,8 +21,7 @@ class Preprocess(object):
         self.thread_size = thread_size
         logging.basicConfig(level=logging.DEBUG)
         self.logger = logging.getLogger(__name__)
-        self.mutex = threading.Lock()
-        self.id_generator = IdentityGenerator(mutex=self.mutex)
+        self.id_generator = IdentityGenerator()
         pass
 
     def generate_preprocess_handler(self, preprocess_type, website_name):
@@ -43,8 +41,9 @@ class Preprocess(object):
         pool = ThreadPool(self.thread_size)
         # 使用线程池
         for i in range(self.thread_size):
-            h = self.generate_preprocess_handler(preprocess_type, website_name)
-            pool.add_handler(h)
+            handler = self.generate_preprocess_handler(
+                preprocess_type, website_name)
+            pool.add_handler(handler)
         pool.startAll()
         # 打开新闻爬虫文件
         f = self.open_crawler_file(preprocess_type, website_name)
