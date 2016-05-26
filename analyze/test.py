@@ -102,4 +102,6 @@ def word2vec_test():
     word2vec.test_model(os.path.join(ANA_DATA_DIR, 'word2vec_test_word.txt'))
 
 if __name__ == '__main__':
-    word2vec_test()
+    filename = CRAWL_FILE_NAMES[TYPE_NEWS][WEBSITE_EASTMONEY]
+    output_file = NEWS_WORDS_FILE
+    word_segment.text_word_segment_multithread(filename, output_file)

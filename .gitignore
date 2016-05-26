@@ -93,5 +93,6 @@ ENV/
 *.json
 *.count
 *.exe
+*.txt
 job_info
 strategy/data

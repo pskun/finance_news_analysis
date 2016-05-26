@@ -8,6 +8,7 @@ import logging
 
 from universe_settings import *
 from utils.threadpool import Handler
+from utils import util_func
 from database.mysql_pool import MySQLPool
 from database import mysql_config
 from database import common_db_func
@@ -102,6 +103,8 @@ class GubaPreprocessHandler(Handler):
             print url
             self.logger.debug(url)
             return None
+        # 过滤emoji表情
+        title = util_func.filter_emoji(title)
         db_id = self.id_generator.generate_guba_id(self.website_name)
         tiezi_tuple = (
             db_id,

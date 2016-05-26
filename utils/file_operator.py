@@ -37,10 +37,10 @@ class FileMultiReadWrite(object):
             self.mutex.release()
         pass
 
-    def wirte(self, line):
+    def write(self, line):
         ''' 向文件中写 '''
         self.lock()
-        self.file.wirte(line)
+        self.file.write(line)
         self.unlock()
 
     def read(self):

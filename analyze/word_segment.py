@@ -114,6 +114,7 @@ class WordSegmentHandler(Handler):
     def process_function(self, data_item):
         ''' 回调函数: 从任务队列中取出一个数据进行处理 '''
         url = data_item['url']
+        # print url
         content = data_item['content']
         doc_words = doc_word_segment(content, stop=True)
         line = "# " + url + "\n"
