@@ -84,8 +84,7 @@ def extract_keyword():
 
 def word2vec_train():
     # Gensim的word2vec的输入是句子的序列. 每个句子是一个单词列表
-    sentences = word2vec.Word2vecSentence(
-        os.path.join(ANA_DATA_DIR, 'words.txt'))
+    sentences = word2vec.Word2vecSentence(NEWS_WORDS_FILE)
     word2vec.train(sentences)
     '''
     if not os.path.exists(output_file):
@@ -102,6 +101,9 @@ def word2vec_test():
     word2vec.test_model(os.path.join(ANA_DATA_DIR, 'word2vec_test_word.txt'))
 
 if __name__ == '__main__':
+    '''
     filename = CRAWL_FILE_NAMES[TYPE_NEWS][WEBSITE_EASTMONEY]
     output_file = NEWS_WORDS_FILE
     word_segment.text_word_segment_multithread(filename, output_file)
+    '''
+    word2vec_train()

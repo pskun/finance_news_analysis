@@ -8,6 +8,7 @@ import multiprocessing
 import logging
 
 from gensim.models import Word2Vec
+from analyze_settings import *
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -20,18 +21,22 @@ CPU_COUNT = multiprocessing.cpu_count()
 
 
 class Word2vecSentence(object):
-
+    ''' gensim模型读取语料的迭代器 '''
     def __init__(self, filename):
         self.filename = filename
 
     def __iter__(self):
         f = codecs.open(self.filename, 'r', 'utf-8', errors='ignore')
         for line in f:
-            yield line.strip().split()
+            line = line.strip()
+            if len(line) == 0 or line[0] == '#':
+                continue
+            yield line.split()
         pass
 
 
-def train(sentences, output_file='test.word2vec'):
+def train(sentences, output_file=WORD2VEC_MODEL):
+    ''' 训练word2vec '''
     model = Word2Vec(sentences, size=300, window=10, workers=CPU_COUNT)
     # model.save_word2vec_format(output_file)
     model.save(output_file)
@@ -56,7 +61,7 @@ def test_model_random(sentences, output_file):
             print "[WARN] low-frequency word"
 
 
-def test_model(word_file, model_file='test.word2vec'):
+def test_model(word_file, model_file=WORD2VEC_MODEL):
     model = Word2Vec.load(model_file)
     for line in codecs.open(word_file, 'r', 'utf-8'):
         word = line.strip()
