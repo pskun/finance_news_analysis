@@ -7,6 +7,7 @@ from ..items import NewsItem
 
 
 class HexunNewsSpider(CrawlSpider):
+    ''' 和讯新闻爬虫 '''
     name = 'HexunNewsSpider'
     allowed_domains = ['hexun.com']
     start_urls = []

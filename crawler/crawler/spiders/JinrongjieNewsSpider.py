@@ -8,11 +8,11 @@ from scrapy.utils.response import get_base_url
 from scrapy.utils.url import urljoin_rfc
 
 from ..items import NewsItem
-
 from utils import util_func
 
 
 class JinrongjieNewsSpider(CrawlSpider):
+    ''' 金融界新闻爬虫 '''
     name = 'JinrongjieNewsSpider'
     allowed_domains = ['jrj.com.cn']
     start_urls = []

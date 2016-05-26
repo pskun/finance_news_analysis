@@ -4,6 +4,7 @@ import threading
 
 
 class IdentityGenerator(object):
+    ''' 插入数据库时，新闻ID和股吧ID的ID生成器 '''
 
     def __init__(self, initial_counter=1, mutex=None):
         self.id_counter = initial_counter
@@ -14,6 +15,7 @@ class IdentityGenerator(object):
         pass
 
     def set_initial_counter(self, initial_counter):
+        ''' 设置初始的ID值 '''
         self.id_counter = initial_counter
         pass
 

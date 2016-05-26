@@ -6,6 +6,7 @@ from ..items import GubaItem
 
 
 class EastmoneyGubaSpider(CrawlSpider):
+    ''' 东方财富股吧内容页爬虫 '''
     name = 'EastMoneyGubaSpider'
     allowed_domains = ['guba.eastmoney.com']
 

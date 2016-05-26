@@ -16,6 +16,9 @@ from database import mysql_config
 
 
 class Preprocess(object):
+    ''' 对爬取的文件进行预处理的类
+        目前的预处理仅是对数据进行清洗，然后插入数据库中
+    '''
 
     def __init__(self, thread_size=1):
         self.thread_size = thread_size
@@ -36,7 +39,7 @@ class Preprocess(object):
         pass
 
     def preprocess_crawler_results(self, preprocess_type, website_name):
-        ''' 对新闻数据进行预处理，主要是清洗然后插入数据库 '''
+        ''' 对爬取的数据进行预处理，主要是清洗然后插入数据库 '''
         self.logger.debug("start process crawler results.")
         pool = ThreadPool(self.thread_size)
         # 使用线程池

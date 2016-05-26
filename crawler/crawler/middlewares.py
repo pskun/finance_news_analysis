@@ -8,7 +8,6 @@ from settings import USER_AGENTS, PROXIES
 
 class RandomUserAgentMiddleWare(UserAgentMiddleware):
     '''Randomly rotate user agents based on a list of predefined ones'''
-
     def __init__(self, agent=""):
         self.user_agent = agent
 

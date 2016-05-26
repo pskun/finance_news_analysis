@@ -7,7 +7,9 @@ import esm
 
 
 class KeywordExtractor(object):
-
+    ''' 关键词抽取类
+        支持给定关键词、TFIDF关键词和Textrank关键字的抽取
+    '''
     def __init__(self):
         self.given_words_indexs = {}
         self.words_idf = None
@@ -35,6 +37,8 @@ class KeywordExtractor(object):
     def extractGivenKeywords(self, doc_str):
         ''' 从一个字符串中抽取给定的关键词
             给定关键词需要预先初始化
+            抽取给定关键词使用的是AC自动机算法
+            参考: http://www.cppblog.com/mythit/archive/2009/04/21/80633.html
         '''
         doc_str = doc_str.encode('utf-8')
         all_type_keywords = {}
@@ -52,12 +56,15 @@ class KeywordExtractor(object):
         pass
 
     def extarctTextRankKeywords(self, doc_str, window=5):
-        ''' 使用TextRank算法提取关键词 '''
+        ''' 使用TextRank算法提取关键词
+            参考: http://www.letiantian.me/2014-12-01-text-rank/
+        '''
         keywords = jieba.analyse.textrank(doc_str, withWeight=True)
         return keywords
         pass
 
     def initTfidfKeywords(self, idf_file=None):
+        ''' 使用TFIDF关键词抽取算法时，需要先初始化IDF文件 '''
         self.words_idf = {}
         if idf_file is not None:
             jieba.analyse.set_idf_path(idf_file)

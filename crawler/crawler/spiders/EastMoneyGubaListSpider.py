@@ -14,6 +14,7 @@ from utils import util_func
 
 
 class EastmoneyGubaListSpider(CrawlSpider):
+    ''' 东方财富股吧列表页爬虫 '''
     name = 'EastMoneyGubaListSpider'
     allowed_domains = ['guba.eastmoney.com']
     start_urls = []
@@ -67,7 +68,6 @@ class EastmoneyGubaListSpider(CrawlSpider):
 
     def parse_list_item(self, response):
         ''' 解析股吧的列表 '''
-
         list_url = response.url
         ticker_name = response.xpath(
             '//span[@id="stockname"]/a/text()').extract()

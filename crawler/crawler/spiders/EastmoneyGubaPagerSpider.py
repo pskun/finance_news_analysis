@@ -3,10 +3,14 @@
 from scrapy.http.request import Request
 from scrapy.spiders import CrawlSpider
 
-from ..items import EastMoneyGubaPageNumItem
+from ..items import GubaPageNumItem
+from utils import util_func
 
 
 class EastmoneyGubaPagerSpider(CrawlSpider):
+    ''' 东方财富股吧列表的页数爬虫
+        注意: 目前已经弃用，功能已经整合到股票列表页爬虫中
+    '''
     name = 'EastMoneyGubaPagerSpider'
     allowed_domains = ['guba.eastmoney.com']
     start_urls = []
@@ -18,15 +22,8 @@ class EastmoneyGubaPagerSpider(CrawlSpider):
             yield Request(url, self.parse_item)
         pass
 
-    def atoi(self, a):
-        try:
-            a = int(a)
-        except ValueError:
-            a = None
-        return a
-
     def parse_item(self, response):
-        item = EastMoneyGubaPageNumItem()
+        item = GubaPageNumItem()
 
         if response.status != 200:
             item['status'] = response.status
@@ -38,8 +35,8 @@ class EastmoneyGubaPagerSpider(CrawlSpider):
         pager_info = response.xpath(
             '//span[@class="pagernums"]/@data-pager').extract()
         pager_info = "".join(pager_info).split("|")
-        total_count = self.atoi(pager_info[1])
-        num_per_page = self.atoi(pager_info[2])
+        total_count = util_func.atoi(pager_info[1])
+        num_per_page = util_func.atoi(pager_info[2])
 
         item['ticker_id'] = ticker_id
         item['total_count'] = total_count

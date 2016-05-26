@@ -6,9 +6,11 @@ from scrapy.utils.response import get_base_url
 from scrapy.utils.url import urljoin_rfc
 
 from ..items import ResearchPaperItem
+from utils import util_func
 
 
 class HexunResearchPaperSpider(CrawlSpider):
+    ''' 和讯研报爬虫 '''
     name = 'HexunResearchPaperSpider'
     allowed_domains = ['yanbao.stock.hexun.com']
     start_urls = []
@@ -29,26 +31,12 @@ class HexunResearchPaperSpider(CrawlSpider):
                 meta={'section': page_section_dict[section_short_name]},
                 callback=self.parse_index_page_item)
 
-    def atoi(self, a):
-        try:
-            a = int(a)
-        except ValueError:
-            a = None
-        return a
-
-    def atof(self, f):
-        try:
-            f = float(f)
-        except ValueError:
-            f = None
-        return f
-
     def parse_index_page_item(self, response):
         base_url = response.url
         # 找到总页数
         page_num = response.xpath(
             '//div[@class="hx_paging"]/ul/li[10]/a/text()').extract()
-        page_num = self.atoi(page_num[0])
+        page_num = util_func.atoi(page_num[0])
         self.logger.debug("url: " + base_url + "\tpage_num: " + str(page_num))
         base_url += "?1=1&page=%d"
         # 解析首页

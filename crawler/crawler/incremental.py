@@ -6,6 +6,8 @@
 2016-05-12 01:00:00\tend crawl
 crawl count: 10000
 update to: 20160512
+
+注意: 增量爬虫部分尚未完成
 '''
 
 import os
