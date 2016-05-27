@@ -10,6 +10,7 @@ CRAWLER_TYPE_HANDLER_DICT = {
     TYPE_GUBALIST: 'GubaPreprocessHandler',
     TYPE_GUBA: 'GubaPreprocessHandler',
     TYPE_NEWS: 'NewsPreprocessHandler',
+    TYPE_REPORT: 'ReportPreprocessHandler',
 }
 
 ''' 基本不需要修改的部分 '''
@@ -17,7 +18,7 @@ CRAWLER_TYPE_HANDLER_DICT = {
 PRE_DATA_DIR = os.path.join(PREPROCESS_DIR, 'pre_data')
 # 给定关键词文件目录
 GIVEN_KEYWORD_DIR = os.path.join(PRE_DATA_DIR, 'given_keywords')
-
+# 给定关键词文件
 GIVEN_KEYWORD_FILES = {
     'wind_concept': r'concept_keywords.txt',
     'shenwan_1st_industry': r'shenwan_1st_industry.txt',

@@ -92,5 +92,5 @@ class Preprocess(object):
 
 if __name__ == '__main__':
     process = Preprocess(thread_size=2)
-    process.preprocess_crawler_results(TYPE_NEWS, WEBSITE_EASTMONEY)
+    process.preprocess_crawler_results(TYPE_REPORT, WEBSITE_HEXUN)
     pass
