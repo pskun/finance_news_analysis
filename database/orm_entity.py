@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
 
+from sqlalchemy import Table
+from sqlalchemy import MetaData
+from sqlalchemy import Column, Integer, DateTime, Unicode, String, Float
+from sqlalchemy.ext.declarative import declarative_base
+
 '''
 ##############
 尚未完成
@@ -41,13 +46,6 @@ create fulltest index i_eastmoney_guba_title on eastmoney_guba_list(guba_title);
 create fulltest index i_eastmoney_guba_abstract on eastmoney_guba_list(abstract );
 '''
 
-from sqlalchemy import Table
-from sqlalchemy import MetaData
-from sqlalchemy import Column, Integer, DateTime, Unicode, String, Float
-from sqlalchemy.ext.declarative import declarative_base
-
-from mysql_pool import SqlAlchemyPool
-
 # 创建对象的基类:
 Base = declarative_base()
 # 跟踪表属性
@@ -80,6 +78,7 @@ class StorageFile(Base):
 class Guba(Base):
     ''' 股吧ORM的基类 '''
     __tablename__ = 'eastmoney_guba_list'
+
     guba_id = Column(String(255), primary_key=True)
     guba_title = Column(Unicode(256))
     publish_time = Column(DateTime, primary_key=True)
@@ -95,12 +94,27 @@ class Guba(Base):
     pass
 
 
-class News(object):
+class News(Base):
     ''' 新闻ORM的基类 '''
+    __tablename__ = 'news_list'
+
+    news_id = Column(Unicode(255), primary_key=True)
+    news_title = Column(Unicode(255))
+    publish_time = Column(DateTime, primary_key=True)
+    click_amount = Column(Integer)
+    comment_amount = Column(Integer)
+    abstract = Column(Unicode(65535))
+    news_file_id = Column(Integer)
+    web_id = Column(Integer)
+    page_id = Column(Integer)
+    poster = Column(Unicode(45))
     pass
 
 
 class Report(Base):
+    ''' 研报ORM基类 '''
+    __tablename__ = 'report_list'
+
     report_id = Column(Integer, primary_key=True)
     report_title = Column(Unicode(255))
     publish_time = Column(DateTime)
@@ -108,40 +122,79 @@ class Report(Base):
     org_name = Column(Unicode(45))
     analyst_name = Column(Unicode(45))
     rating_level = Column(Unicode(45))
-    rating_change = Column(Unicode(45)),
+    rating_change = Column(Unicode(45))
     upside = Column(Float)
-    report_class = Column()
+    report_class = Column(Unicode(45))
+    abstract = Column(Unicode(65535))
+    voting_num = Column(Integer)
+    good_ratio = Column(Float)
+    general_ratio = Column(Float)
+    bad_ratio = Column(Float)
+    news_file_id = Column(Integer)
+    web_id = Column(Integer)
+    page_id = Column(Integer)
     pass
 
 
-class Page(object):
+class Page(Base):
     ''' 版面ORM的基类 '''
+    __tablename__ = 'page_list'
+
+    page_id = Column(Integer, primary_key=True)
+    web_id = Column(Integer)
+    page_name = Column(Unicode(255))
+    page_level = Column(Integer)
+    parent_page_id = Column(Integer)
     pass
 
 
 class Subject(object):
     ''' 主题ORM映射类 '''
+    __tablename__ = 'subject_list'
+
+    subject_id = Column(Integer, primary_key=True)
+    subject = Column(Unicode(255))
+    subject_type = Column(Integer)
     pass
 
 
-class KeywordProperty(object):
+class KeywordProperty(Base):
     ''' 关键词属性ORM映射 '''
+    __tablename__ = 'keywords_property'
+
+    keywords_property_id = Column(Integer, primary_key=True)
+    keywords_property_col = Column(Unicode(45))
     pass
 
 
 class Keyword(object):
     ''' 关键词ORM映射 '''
+    __tablename__ = 'keywords_list'
+
+    keywords_id = Column(Integer, primary_key=True)
+    keywords = Column(Unicode(255))
+    keywords_type = Column(Integer)
+    keywords_property_id = Column(Integer)
     pass
 
 
-class KeywordSecRelation(object):
-    ''' 关键词股票代码关系映射类 '''
-    pass
-
-
-class NewsSecRelation(object):
+class NewsSecRelation(Base):
     ''' 新闻股票代码关系映射类 '''
+    __tablename__ = 'cor_sec_of_news'
+
+    news_id = Column(Unicode(255), primary_key=True)
+    sec_number = Column(Unicode(8), primary_key=True)
     pass
+
+
+class KeywordNewsRelation(Base):
+    ''' 关键词新闻关联映射类 '''
+    __tablename__ = 'rel_keywords_news'
+    amount_keywords_in_news = Column(Integer)
+    keywords_id = Column(Integer, primary_key=True)
+    news_id = Column(Unicode(255), primary_key=True)
+    pass
+
 
 # 版面Mysql表
 page_table = Table(
@@ -237,16 +290,3 @@ news_sec_table = Table(
     Column('news_id', Integer, primary_key=True),
     Column('sec_number', String(8), primary_key=True)
 )
-
-
-import orm_db_common_func
-
-
-def main():
-    mysql = SqlAlchemyPool()
-    conn = mysql.getConnection()
-    print orm_db_common_func.query_table_count(conn, Guba)
-    pass
-
-if __name__ == '__main__':
-    main()
