@@ -16,22 +16,16 @@ sys.setdefaultencoding('utf8')
 
 
 def doc_segment():
-    field_name = 'content'
     filename = CRAWL_FILE_NAMES[TYPE_NEWS][WEBSITE_EASTMONEY]
-    f = codecs.open(filename, 'r', 'utf-8', errors='ignore')
-    out = codecs.open(os.path.join(ANA_DATA_DIR, 'words.txt'), 'wb', 'utf-8')
-    for line in f:
-        try:
-            data = json.loads(line.strip())
-            content = data.get(field_name)
-            if content is not None:
-                doc_words = word_segment.doc_word_segment(content, stop=True)
-                for sentences in doc_words:
-                    line = " ".join(sentences)
-                    out.write(line + '\n')
-        except:
-            continue
+    output_file = NEWS_WORDS_FILE
+    word_segment.text_word_segment_multithread(filename, output_file)
     pass
+
+
+def doc_letter_segment():
+    filename = CRAWL_FILE_NAMES[TYPE_NEWS][WEBSITE_EASTMONEY]
+    output_file = NEWS_WORDS_FILE
+    
 
 
 def processIDF():
@@ -100,10 +94,6 @@ def word2vec_train():
 def word2vec_test():
     word2vec.test_model(os.path.join(ANA_DATA_DIR, 'word2vec_test_word.txt'))
 
+
 if __name__ == '__main__':
-    '''
-    filename = CRAWL_FILE_NAMES[TYPE_NEWS][WEBSITE_EASTMONEY]
-    output_file = NEWS_WORDS_FILE
-    word_segment.text_word_segment_multithread(filename, output_file)
-    '''
-    word2vec_train()
+    doc_segment()

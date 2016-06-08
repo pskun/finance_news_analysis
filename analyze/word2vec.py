@@ -67,7 +67,7 @@ def test_model(word_file, model_file=WORD2VEC_MODEL):
         word = line.strip()
         print ">>> %s" % (word)
         try:
-            for w, s in model.most_similar("10"):
+            for w, s in model.most_similar(word):
                 print "%.6f %s" % (s, w)
         except:
             print "[WARN] low-frequency word"

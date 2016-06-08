@@ -44,6 +44,7 @@ ANALYZE_DIR = os.path.join(BASE_DIR, 'analyze')
 CRAWL_FILE_NAMES = {
     TYPE_NEWS: {
         WEBSITE_EASTMONEY: r'EastMoneyNewsSpider.json',
+        WEBSITE_JINRONGJIE: r'JinrongjieNewsSpider.json',
     },
     TYPE_GUBA: {
         WEBSITE_EASTMONEY: r'EastMoneyGubaSpider.json',
@@ -51,11 +52,16 @@ CRAWL_FILE_NAMES = {
     TYPE_GUBALIST: {
         WEBSITE_EASTMONEY: r'EastMoneyGubaListSpider.json',
     },
+    TYPE_REPORT: {
+        WEBSITE_HEXUN: r'HexunResearchPaperSpider.json',
+    }
 }
 
 # 新加入一个爬取网站时需要加入
 CRAWL_WEBSITES = {
     WEBSITE_EASTMONEY: r'http://www.eastmoney.com/',
+    WEBSITE_HEXUN: r'http://www.hexun.com/',
+    WEBSITE_JINRONGJIE: r'http://www.jrj.com.cn/',
 }
 
 for precess_type in CRAWL_FILE_NAMES:

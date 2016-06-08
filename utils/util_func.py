@@ -19,6 +19,8 @@ def atof(f):
         f = float(f)
     except ValueError:
         f = None
+    except TypeError:
+        f = None
     return f
 
 
