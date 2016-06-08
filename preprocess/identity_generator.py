@@ -48,3 +48,10 @@ class IdentityGenerator(object):
         self.id_counter += 1
         self.unlock()
         return guba_id
+
+    def generate_report_id(self):
+        self.lock()
+        report_id = "report" + str(self.id_counter)
+        self.id_counter += 1
+        self.unlock()
+        return report_id

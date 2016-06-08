@@ -2,11 +2,49 @@
 
 from sqlalchemy import Table
 from sqlalchemy import MetaData
-from sqlalchemy import Column, Integer, DateTime, Unicode, String
+from sqlalchemy import Column, Integer, DateTime, Unicode, String, Float
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import mapper
 
-from mysql_pool import SqlAlchemyPool
+'''
+##############
+尚未完成
+##############
+'''
+
+'''
+股吧建表语句
+create table eastmoney_guba_list (
+    guba_id varchar(255) not null comment'唯一ID,web_name+ID拼接',
+    guba_title varchar(255) comment'标题',
+    publish_time datetime not null comment'发布时间，用来做分区，要求非空',
+    click_amount int comment'点击数量',
+    comment_amount int comment'评论数量',
+    abstract mediumtext comment'摘要',
+    poster varchar(45) comment'作者',
+    news_file_id int comment'文件ID',
+    web_id int comment'网站ID',
+    page_id int comment'页面ID',
+    sec_number varchar(8) comment'股票代码'
+    primary key(guba_id,publish_time)
+) ENGINE=MyISAM default charset=utf8
+partition by range (year(publish_time)) (
+    partition p2007 values less than (2008),
+    partition p2008 values less than (2009),
+    partition p2009 values less than (2010),
+    partition p2010 values less than (2011),
+    partition p2011 values less than (2012),
+    partition p2012 values less than (2013),
+    partition p2013 values less than (2014),
+    partition p2014 values less than (2015),
+    partition p2015 values less than (2016),
+    partition p2016 values less than (2017)
+);
+--在时间字段上创建索引
+create index i_eastmoney_guba_pubtime on eastmoney_guba_list(publish_time);
+create index i_eastmoney_guba_sec on eastmoney_guba_list(sec_number);
+create fulltest index i_eastmoney_guba_title on eastmoney_guba_list(guba_title);
+create fulltest index i_eastmoney_guba_abstract on eastmoney_guba_list(abstract );
+'''
 
 # 创建对象的基类:
 Base = declarative_base()
@@ -15,68 +53,148 @@ metadata = MetaData()
 
 
 class Website(Base):
-    ''' 网站ORM的基类 '''
+    ''' 已爬取网站的ORM基类 '''
     __tablename__ = 'web_list'
 
     web_id = Column(Integer, primary_key=True)
     web_name = Column(String(255))
     web_address = Column(String(255))
+
     pass
 
 
-class StorageFile(object):
+class StorageFile(Base):
     ''' 保存文件ORM的基类 '''
+    __tablename__ = 'news_file_list'
+
+    news_file_id = Column(Integer, primary_key=True)
+    web_id = Column(Integer)
+    page_id = Column(Integer)
+    file_storage_location = Column(Unicode(255))
+    file_name = Column(Unicode(255))
     pass
 
 
-class Guba(object):
+class Guba(Base):
     ''' 股吧ORM的基类 '''
     __tablename__ = 'eastmoney_guba_list'
-    tiezi_id = Column(String(255), primary_key=True),
-    tiezi_title = Column(Unicode(256)),
-    publish_time = Column(DateTime),
-    click_amount = Column(Integer),
-    comment_amount = Column(Integer),
-    content = Column(Unicode(10240)),
-    sec_number = Column(Unicode(8)),
-    url = Column(Unicode(100)),
+
+    guba_id = Column(String(255), primary_key=True)
+    guba_title = Column(Unicode(256))
+    publish_time = Column(DateTime, primary_key=True)
+    abstract = Column(Unicode(10240))
     poster = Column(Unicode(30))
+    click_amount = Column(Integer)
+    comment_amount = Column(Integer)
+    news_file_id = Column(Integer)
+    web_id = Column(Integer)
+    page_id = Column(Integer)
+    sec_number = Column(Unicode(8))
+    url = Column(Unicode(100))
     pass
 
 
-class News(object):
+class News(Base):
     ''' 新闻ORM的基类 '''
+    __tablename__ = 'news_list'
+
+    news_id = Column(Unicode(255), primary_key=True)
+    news_title = Column(Unicode(255))
+    publish_time = Column(DateTime, primary_key=True)
+    click_amount = Column(Integer)
+    comment_amount = Column(Integer)
+    abstract = Column(Unicode(65535))
+    news_file_id = Column(Integer)
+    web_id = Column(Integer)
+    page_id = Column(Integer)
+    poster = Column(Unicode(45))
     pass
 
 
-class Page(object):
+class Report(Base):
+    ''' 研报ORM基类 '''
+    __tablename__ = 'report_list'
+
+    report_id = Column(Integer, primary_key=True)
+    report_title = Column(Unicode(255))
+    publish_time = Column(DateTime)
+    industry = Column(Unicode(45))
+    org_name = Column(Unicode(45))
+    analyst_name = Column(Unicode(45))
+    rating_level = Column(Unicode(45))
+    rating_change = Column(Unicode(45))
+    upside = Column(Float)
+    report_class = Column(Unicode(45))
+    abstract = Column(Unicode(65535))
+    voting_num = Column(Integer)
+    good_ratio = Column(Float)
+    general_ratio = Column(Float)
+    bad_ratio = Column(Float)
+    news_file_id = Column(Integer)
+    web_id = Column(Integer)
+    page_id = Column(Integer)
+    pass
+
+
+class Page(Base):
     ''' 版面ORM的基类 '''
+    __tablename__ = 'page_list'
+
+    page_id = Column(Integer, primary_key=True)
+    web_id = Column(Integer)
+    page_name = Column(Unicode(255))
+    page_level = Column(Integer)
+    parent_page_id = Column(Integer)
     pass
 
 
 class Subject(object):
     ''' 主题ORM映射类 '''
+    __tablename__ = 'subject_list'
+
+    subject_id = Column(Integer, primary_key=True)
+    subject = Column(Unicode(255))
+    subject_type = Column(Integer)
     pass
 
 
-class KeywordProperty(object):
+class KeywordProperty(Base):
     ''' 关键词属性ORM映射 '''
+    __tablename__ = 'keywords_property'
+
+    keywords_property_id = Column(Integer, primary_key=True)
+    keywords_property_col = Column(Unicode(45))
     pass
 
 
 class Keyword(object):
     ''' 关键词ORM映射 '''
+    __tablename__ = 'keywords_list'
+
+    keywords_id = Column(Integer, primary_key=True)
+    keywords = Column(Unicode(255))
+    keywords_type = Column(Integer)
+    keywords_property_id = Column(Integer)
     pass
 
 
-class KeywordSecRelation(object):
-    ''' 关键词股票代码关系映射类 '''
-    pass
-
-
-class NewsSecRelation(object):
+class NewsSecRelation(Base):
     ''' 新闻股票代码关系映射类 '''
+    __tablename__ = 'cor_sec_of_news'
+
+    news_id = Column(Unicode(255), primary_key=True)
+    sec_number = Column(Unicode(8), primary_key=True)
     pass
+
+
+class KeywordNewsRelation(Base):
+    ''' 关键词新闻关联映射类 '''
+    __tablename__ = 'rel_keywords_news'
+    amount_keywords_in_news = Column(Integer)
+    keywords_id = Column(Integer, primary_key=True)
+    news_id = Column(Unicode(255), primary_key=True)
+    pass
+
 
 # 版面Mysql表
 page_table = Table(
@@ -88,39 +206,6 @@ page_table = Table(
     Column('parent_page_id', Integer)
 )
 
-''' 股吧建表语句
-    create table eastmoney_guba_list (
-        guba_id varchar(255) not null comment'唯一ID,web_name+ID拼接',
-        guba_title varchar(255) comment'标题',
-        publish_time datetime not null comment'发布时间，用来做分区，要求非空',
-        click_amount int comment'点击数量',
-        comment_amount int comment'评论数量',
-        abstract mediumtext comment'摘要',
-        poster varchar(45) comment'作者',
-        news_file_id int comment'文件ID',
-        web_id int comment'网站ID',
-        page_id int comment'页面ID',
-        sec_number varchar(8) comment'股票代码'
-        primary key(guba_id,publish_time)
-    ) ENGINE=MyISAM default charset=utf8
-    partition by range (year(publish_time)) (
-        partition p2007 values less than (2008),
-        partition p2008 values less than (2009),
-        partition p2009 values less than (2010),
-        partition p2010 values less than (2011),
-        partition p2011 values less than (2012),
-        partition p2012 values less than (2013),
-        partition p2013 values less than (2014),
-        partition p2014 values less than (2015),
-        partition p2015 values less than (2016),
-        partition p2016 values less than (2017)
-    );
-    --在时间字段上创建索引
-    create index i_eastmoney_guba_pubtime on eastmoney_guba_list(publish_time);
-    create index i_eastmoney_guba_sec on eastmoney_guba_list(sec_number);
-    create fulltest index i_eastmoney_guba_title on eastmoney_guba_list(guba_title);
-    create fulltest index i_eastmoney_guba_abstract on eastmoney_guba_list(abstract );
-'''
 # 股吧Mysql表
 guba_table = Table(
     'guba_list', metadata,
@@ -205,21 +290,3 @@ news_sec_table = Table(
     Column('news_id', Integer, primary_key=True),
     Column('sec_number', String(8), primary_key=True)
 )
-
-# 把表映射到类
-mapper(News, news_table)
-mapper(Page, page_table)
-mapper(Subject, subject_table)
-
-
-def main():
-    mysql = SqlAlchemyPool()
-    conn = mysql.getConnection()
-    web = Website()
-    web.web_name = 'eastmoney'
-    result = conn.query(web)
-    print result
-    pass
-
-if __name__ == '__main__':
-    main()

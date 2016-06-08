@@ -10,7 +10,6 @@ from sqlalchemy.orm import sessionmaker
 
 from mysql_config import DATABASE_CONFIG
 from mysql_connection import MySQLConnection
-from orm_conn import ORMConnection
 
 
 def singleton(cls, *args, **kw):
@@ -44,8 +43,7 @@ class SqlAlchemyPool(object):
         # 将创建的数据库连接关联到这个session
         Session.configure(bind=self.__engine)
         session = Session()
-        wraped_conn = ORMConnection(session)
-        return wraped_conn
+        return session
         pass
 
 

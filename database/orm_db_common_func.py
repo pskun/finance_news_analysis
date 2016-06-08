@@ -2,12 +2,12 @@
 
 import os
 import mysql_config
+from sqlalchemy import func
 
 
-def query_table_count(db_session, table):
+def query_table_count(db_session, class_type):
     ''' 获取某张表的行数 '''
-    count = db_session.execute("select count(*) from %s" % table)
-    count = count[0]['count(*)']
+    count = db_session.query(func.count('*')).select_from(class_type).scalar()
     return count
 
 
