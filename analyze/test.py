@@ -24,8 +24,9 @@ def doc_segment():
 
 def doc_letter_segment():
     filename = CRAWL_FILE_NAMES[TYPE_NEWS][WEBSITE_EASTMONEY]
-    output_file = NEWS_WORDS_FILE
-    
+    output_file = NEWS_LETTER_FILE
+    word_segment.text_word_segment_multithread(
+        filename, output_file, level='letter')
 
 
 def processIDF():
@@ -96,4 +97,4 @@ def word2vec_test():
 
 
 if __name__ == '__main__':
-    doc_segment()
+    doc_letter_segment()

@@ -10,6 +10,8 @@ STOPWORDS_FILE = "stopwords.txt"
 IDF_FILE = "idf.txt"
 # 新闻分词后生成的文件
 NEWS_WORDS_FILE = 'news_words.txt'
+# 新闻分字后生成的文件
+NEWS_LETTER_FILE = 'news_letter.txt'
 
 ''' 分析模型文件 '''
 # word2vec文件
@@ -25,5 +27,6 @@ DICT = os.path.join(ANA_DATA_DIR, DICT)
 STOPWORDS_FILE = os.path.join(ANA_DATA_DIR, STOPWORDS_FILE)
 IDF_FILE = os.path.join(ANA_DATA_DIR, IDF_FILE)
 NEWS_WORDS_FILE = os.path.join(ANA_DATA_DIR, NEWS_WORDS_FILE)
+NEWS_LETTER_FILE = os.path.join(ANA_DATA_DIR, NEWS_LETTER_FILE)
 WORD2VEC_MODEL = os.path.join(ANA_DATA_DIR, WORD2VEC_MODEL)
 LDA_MODEL = os.path.join(ANA_DATA_DIR, LDA_MODEL)

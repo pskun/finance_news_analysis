@@ -68,10 +68,12 @@ def chinese_letter_segment(
             continue
         if stop and letter in STOP_WORDS:
             continue
-        if remain_digit and letter.isdigit():
+        if not remain_digit and letter.isdigit():
             continue
-        if remain_char and letter.isalpha():
+        '''
+        if not remain_char and letter.isalpha():
             continue
+        '''
         letter_list.append(letter)
     return letter_list
 

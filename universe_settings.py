@@ -44,11 +44,8 @@ ANALYZE_DIR = os.path.join(BASE_DIR, 'analyze')
 CRAWL_FILE_NAMES = {
     TYPE_NEWS: {
         WEBSITE_EASTMONEY: r'EastMoneyNewsSpider.json',
-<<<<<<< HEAD
         WEBSITE_JINRONGJIE: r'JinrongjieNewsSpider.json',
-=======
         WEBSITE_HEXUN: r'HexunNewsSpider.json'
->>>>>>> bd5d4ab35d81ac5f3e27ecd1873596b6cbd1a902
     },
     TYPE_GUBA: {
         WEBSITE_EASTMONEY: r'EastMoneyGubaSpider.json',

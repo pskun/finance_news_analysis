@@ -1,8 +1,6 @@
 # encoding=utf-8
 
-import psutil
 import sys
-import time
 import traceback
 from Queue import Queue
 from threading import Thread
@@ -44,9 +42,12 @@ class Worker(Thread):
         pass
 
     def startWorker(self):
-        self.__handler.before_thread_start()
         self.setDaemon(self.__daemon)
         self.start()
+        pass
+
+    def before_run(self):
+        self.__handler.before_thread_start()
         pass
 
     def run(self):
@@ -57,9 +58,7 @@ class Worker(Thread):
                 self.__handler.process_function(data)
             except:
                 traceback.print_exc()
-                sys.exit()
             self.__queue.task_done()
-            pass
         self.__handler.clear_handler()
         pass
 
@@ -72,23 +71,11 @@ class ThreadPool(object):
         self.__num_threads = num_threads
         self.__queue = Queue()
         self.__output = Queue()
-        self.__push_count = 0
         pass
 
     def add_process_data(self, data):
         ''' 向队列中添加任务数据 '''
         self.__queue.put(data)
-        # 如果生产者一直向队列中push数据，内存可能对撑爆
-        # 所以需要wait，等待消费者把数据处理一部分再push
-        self.__push_count += 1
-        if self.__push_count >= 5000:
-            while True:
-                mem = psutil.virtual_memory()
-                if float(mem.used) / float(mem.total) > 0.80:
-                    time.sleep(10)
-                else:
-                    break
-            self.__push_count = 0
         pass
 
     def wait_completion(self):
@@ -105,18 +92,14 @@ class ThreadPool(object):
         self.__workers.append(w)
         return True
 
-    def produce_completed(self):
-        """ 生成者消费者模式中，生产者把数据全局put进队列后调用"""
-        # TODO
-        pass
-
     def startAll(self):
+        for t in self.__workers:
+            t.before_run()
         for t in self.__workers:
             t.startWorker()
         pass
 
     def shutdown(self):
-        # TODO
         for t in self.__workers:
             pass
         pass
