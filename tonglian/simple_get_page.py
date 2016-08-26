@@ -11,4 +11,4 @@ url = sys.argv[1]
 
 response = urllib2.urlopen(url)
 html = response.read()
-print html  
+print html
