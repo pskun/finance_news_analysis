@@ -8,9 +8,9 @@ from string import Template
 
 from tonglian_data_api import Client
 
-TOKEN = '0750879ead818fbb5f3bce241340e5b82c0d64c5b613b1b3f83a3e3bfa6977a5'
+TOKEN = 'xx'
 
-WORK_DIR = r'C:\Users\s_pankh\news_data'
+WORK_DIR = r'xxx'
 os.chdir(WORK_DIR)
 
 client = Client()
