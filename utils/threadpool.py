@@ -1,6 +1,5 @@
 # encoding=utf-8
 
-import sys
 import traceback
 from Queue import Queue
 from threading import Thread
