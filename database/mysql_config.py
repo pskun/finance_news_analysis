@@ -2,10 +2,10 @@
 
 # 数据库连接配置
 DATABASE_CONFIG = {
-    'HOST': '10.88.158.45',
-    'DATABASE': 'bigdata_db',
-    'USER': 'tkjg',
-    'PASSWORD': 'tkamc.123',
+    'HOST': 'xx.xx.xxx.xx',
+    'DATABASE': 'xxxx',
+    'USER': 'xxxx',
+    'PASSWORD': 'xxxxx',
 }
 
 # 数据库表名

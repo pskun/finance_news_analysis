@@ -3,6 +3,8 @@
 import sys
 import traceback
 import multiprocessing
+import codecs
+
 
 class ProcessHandler(object):
     ''' 每一个进程将调用一个Handler类 '''
@@ -19,6 +21,29 @@ class ProcessHandler(object):
 
     def clear_handler(self):
         ''' 回调函数: 进程结束前调用 '''
+        pass
+
+
+class OutputFileHandler(ProcessHandler):
+    ''' 定制的文件输出类 '''
+
+    def __init__(self, filename):
+        self._filename = filename
+        pass
+
+    def init_handler(self):
+        ''' 回调函数: 进程启动后立马调用该方法 '''
+        self._output = codecs.open(
+            self._filename, mode='wb', encoding='utf-8')
+        pass
+
+    def process_function(self, data_item):
+        ''' 回调函数: 从任务队列中取出一个数据进行处理 '''
+        self._output.write(data_item)
+
+    def clear_handler(self):
+        ''' 回调函数: 进程结束前调用 '''
+        self._output.close()
         pass
 
 

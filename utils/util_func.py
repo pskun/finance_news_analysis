@@ -2,7 +2,6 @@
 
 import re
 
-
 def atoi(a):
     ''' 字符串转整型 '''
     try:

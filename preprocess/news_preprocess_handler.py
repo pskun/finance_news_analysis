@@ -5,11 +5,40 @@ import logging
 
 from preprocess_settings import *
 from utils.threadpool import Handler
+from utils.processpool import ProcessHandler
 from universe_settings import *
 from analyze.keyword_extraction import KeywordExtractor
 from database.mysql_pool import MySQLPool
 from database import mysql_config
 from database import common_db_func
+
+
+class ExtractTitleHandler(ProcessHandler):
+
+    ''' 每一个进程将调用一个Handler类 '''
+    def __init__(self):
+        pass
+
+    def init_handler(self):
+        ''' 回调函数: 进程启动后立马调用该方法 '''
+        pass
+
+    def process_function(self, data_item):
+        ''' 回调函数: 从任务队列中取出一个数据进行处理 '''
+        try:
+            title = data_item.get('title')
+            return title
+        except KeyboardInterrupt:
+            try:
+                sys.exit(0)
+            except SystemExit:
+                os._exit(0)
+        pass
+
+    def clear_handler(self):
+        ''' 回调函数: 进程结束前调用 '''
+        pass
+    pass
 
 
 class NewsPreprocessHandler(Handler):

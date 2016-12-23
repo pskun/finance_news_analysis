@@ -47,7 +47,7 @@ class JinrongjieNewsSpider(CrawlSpider):
     def parse_index_list(self, response):
         ''' 获取每日新闻的首页信息 '''
         pager = response.xpath('//p[@class="page_newslib"]/a/@href').extract()
-        self.parse_list_page(response)
+        yield self.parse_list_page(response)
         for url in list(set(pager)):
             base_url = get_base_url(response)
             url = urljoin_rfc(base_url, url)

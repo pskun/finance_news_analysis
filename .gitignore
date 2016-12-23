@@ -97,3 +97,4 @@ ENV/
 job_info
 strategy/data
 analyze/ana_data
+data/
