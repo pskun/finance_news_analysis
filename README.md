@@ -1,13 +1,13 @@
 # 项目结构
 .  
-├── analyze(文本模型)   
+├── algorithm(算法模型框架)  
+├── analyze(具体策略)   
 ├── crawler(scrapy爬虫)  
 │   └── crawler  
-│       └── spiders  
+│       └── spiders(爬虫具体抓取代码)  
 ├── database(数据库操作)  
 ├── preprocess(数据预处理)  
-│   └── pre_data  
-│       └── given_keywords  
+│   └── pre_data(预处理存放目录)  
 ├── strategy(回测接口)  
 ├── tonglian(通联数据获取接口)  
 ├── utils(通用处理类)  
