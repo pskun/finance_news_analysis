@@ -1,4 +1,9 @@
-# 项目结构
+## 项目简介
+本项目致力于完成金融相关的数据抓取、NLP算法分析、量化策略、回测框架等的系统搭建工作，系统包括如下几个主要的部分；
+![image](https://ooo.0o0.ooo/2017/06/11/593d32cbf3f37.png)
+代码和tutorial仍在完善中，将于近期更新
+
+## 项目结构
 .  
 ├── algorithm(算法模型框架)  
 ├── analyze(具体策略)   
@@ -10,10 +15,11 @@
 │   └── pre_data(预处理存放目录)  
 ├── strategy(回测接口)  
 ├── tonglian(通联数据获取接口)  
+├── tools(通联数据获取接口) 
 ├── utils(通用处理类)  
 └── data(存放数据的目录)
 
-# Python库依赖
+## Python库依赖
 中文分词: [jieba](https://github.com/fxsjy/jieba)  
 爬虫: [scrapy](http://scrapy.org/)  
 Mysql连接: [MySQLdb](http://mysql-python.sourceforge.net/MySQLdb.html)  
@@ -24,12 +30,12 @@ AC自动机: [esmre](https://github.com/wharris/esmre)
 文本主题模型: [gensim](https://github.com/piskvorky/gensim)  
 快速生成Python扩展模块: [Cython](http://cython.org/)
 
-# 注意事项
+## 注意事项
 1. 修改PYTHONPATH  
 把项目所在目录添加到PYTHONPATH中。  
 建议方法：  
 通过PYTHONPATH 中的任何 .pth 文件来添加pythonpath。  
 比如添加/home/aa这个路径到pythonpath里，可以这样做：  
-    1、新建一个文件，名字随便，但后缀名须是.pth，比如aa.pth；  
-	2、文件内容直接输入"/home/aa"(没有引号)，如果有多个路径可以多行输入，但每行保证只有一个路径；  
-	3、然后文件保存到sys.path列表中的任一文件夹下，一般来说我们保存到/usr/local/lib/python*/dist-packages，需要特别指出的是在不同版本中dist-packages可能被改成site-packages，最后重启python就可以了。  
+    1) 新建一个文件，名字随便，但后缀名须是.pth，比如aa.pth；  
+	2) 文件内容直接输入"/home/aa"(没有引号)，如果有多个路径可以多行输入，但每行保证只有一个路径；  
+	3) 然后文件保存到sys.path列表中的任一文件夹下，一般来说我们保存到/usr/local/lib/python*/dist-packages，需要特别指出的是在不同版本中dist-packages可能被改成site-packages，最后重启python就可以了。  
